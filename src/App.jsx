@@ -1,35 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  // 1) Keep track of the state of tasks & text
+  const [tasks, setTasks] = useState([]);
+  const [text, setText] = useState("");
+
+  function addTask(event) {
+    event.preventDefault();
+
+    const taskText = taskText.trim();
+    if (!taskText) {
+      return;
+    }
+
+    setTasks((prev) => [
+      ...prev,
+      { id: Date.now().toString(), title: taskText },
+    ]);
+
+    setText("");
+  }
+
+  function deleteTask(id) {
+    setTasks((prev) => prev.filter((task) => task.id !== id));
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div style={{ padding: 25, maxWidth: 500, margin: "0 auto" }}>
+      <h1>Task List</h1>
+      <form onSubmit={addTask}>
+        <input
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          placeholder="Write a task..."
+        />
+        <button type="submit">Add</button>
+      </form>
+
+      <ul>
+        {tasks.map((task) => (
+          <li key={task.id}>
+            {task.title}{" "}
+            <button onClick={() => deleteTask(task.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
-export default App
+export default App;
