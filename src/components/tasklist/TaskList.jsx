@@ -1,17 +1,26 @@
-import { useState } from "react";
-
-import "../../App.css";
+import { useState, useEffect } from "react";
 
 import TaskItem from "./TaskItem";
 
+import useLocalStorage from "./../../hooks/useLocalStorage.jsx";
+
 import logger from "../../lib/logger.js";
+
+import "./TaskList.css";
+
+import EmptyState from "./EmptyState.jsx";
 
 const log = logger("[TaskList]", true);
 
 export default function TaskList() {
   // Keep track of the state of tasks & text
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useLocalStorage("tasks", []);
   const [text, setText] = useState("");
+
+  //Log how much tasks we have on start
+  useEffect(() => {
+    log("TaskList mounted with: ", tasks.length, " tasks");
+  }, []);
 
   // Add new task
   function addTask(event) {
@@ -22,28 +31,28 @@ export default function TaskList() {
       return;
     }
 
-    // Add a new task object to the list
-    setTasks((prev) => [
+    /* setTasks((prev) => [
       ...prev,
       { id: Date.now().toString(), title: taskText },
-    ]);
+    ]); */
 
-    setText("");
-
-    log("Task added:", taskText);
-  }
-
-  // Delete a task by ID
-  function deleteTask(id) {
+    // Add a new task object to the list
     setTasks(function (previousTasks) {
-      const updatedTasks = previousTasks.filter(function (task) {
-        return task.id !== id;
-      });
+      const updatedTasks = [...previousTasks];
+
+      const newTask = {
+        id: Date.now().toString(), //returns the current timestamp in ms => number => string
+        title: text,
+      };
+
+      updatedTasks.push(newTask);
 
       return updatedTasks;
     });
 
-    log("Task deleted:", id);
+    setText("");
+
+    log("Task added:", taskText);
   }
 
   function toggleChecked(id, checked) {
@@ -69,10 +78,23 @@ export default function TaskList() {
     log("Toggled checked:", id, checked);
   }
 
+  // Delete a task by ID
+  function deleteTask(id) {
+    setTasks(function (previousTasks) {
+      const updatedTasks = previousTasks.filter(function (task) {
+        return !(task.id == id && task.checked);
+      });
+
+      return updatedTasks;
+    });
+
+    log("Task deleted:", id);
+  }
+
   function toggleCompleted(id, completed) {
     setTasks(function (previousTasks) {
       const updatedTasks = previousTasks.map(function (task) {
-        if (task.id === id) {
+        if (task.id === id && task.checked) {
           return { ...task, completed: completed };
         } else {
           return task;
@@ -85,29 +107,45 @@ export default function TaskList() {
 
   //JSX
   return (
-    <div style={{ padding: 25, maxWidth: 500, margin: "0 auto" }}>
-      <h1>To Do List</h1>
+    <div className="tasklist-container">
+      <section className="tasklist-card tasklist-form-card">
+        <h2 className="tasklist-title">To Do List</h2>
 
-      <form onSubmit={addTask}>
-        <input
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder="Write a task..."
-        />
-        <button type="submit">Add</button>
-      </form>
-
-      <ul>
-        {tasks.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            onDelete={deleteTask}
-            onToggleChecked={toggleChecked}
-            onToggleCompleted={toggleCompleted}
+        <form className="tasklist-form" onSubmit={addTask}>
+          <input
+            className="tasklist-input"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            placeholder="Write a task..."
           />
-        ))}
-      </ul>
+          <button className="tasklist-button" type="submit">
+            Add
+          </button>
+        </form>
+      </section>
+
+      <section className="tasklist-card tasklist-items-card">
+        {tasks.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <ul className="tasklist-items-container">
+            {tasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onDelete={deleteTask}
+                onToggleChecked={toggleChecked}
+                onToggleCompleted={toggleCompleted}
+              />
+            ))}
+          </ul>
+        )}
+      </section>
+      <footer className="tasklist-footer">
+        <p>
+          {tasks.length} {tasks.lenngth === 1 ? "task" : "tasks"} total
+        </p>
+      </footer>
     </div>
   );
 }

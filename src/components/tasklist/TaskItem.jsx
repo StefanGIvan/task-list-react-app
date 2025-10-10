@@ -3,25 +3,34 @@
 // Calls the callbacks it receives from TaskList.jsx
 
 //props sent from the parent
+
+import "./TaskItem.css";
+
 export default function TaskItem({
   task,
   onDelete,
   onToggleChecked,
   onToggleCompleted,
 }) {
-  const handleDelete = () => {
-    if (onDelete) {
-      onDelete(task.id);
-    }
-  };
-
   const handleChecked = (event) => {
     if (onToggleChecked) {
       onToggleChecked(task.id, event.target.checked);
     }
   };
 
+  const handleDelete = () => {
+    if (!task.checked) {
+      return;
+    }
+    if (onDelete) {
+      onDelete(task.id);
+    }
+  };
+
   const handleCompleted = () => {
+    if (!task.checked) {
+      return;
+    }
     if (onToggleCompleted) {
       onToggleCompleted(task.id, !task.completed);
     }
@@ -36,10 +45,8 @@ export default function TaskItem({
         onChange={handleChecked}
       />
 
-      <div className="task-text">
-        <span className="task-title">{task.title}</span>
-        {task.completed && <span className="task-label">Done</span>}
-      </div>
+      <span className="task-title">{task.title}</span>
+      {task.completed && <span className="task-label">Done</span>}
 
       <div className="task-actions">
         <button

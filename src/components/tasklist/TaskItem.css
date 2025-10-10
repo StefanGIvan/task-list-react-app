@@ -1,0 +1,41 @@
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--black);
+  flex-wrap: nowrap;
+}
+
+.task-checkbox {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.task-title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.task-edit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.task-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  opacity: 0.65;
+}

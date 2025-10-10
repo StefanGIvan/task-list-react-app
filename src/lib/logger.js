@@ -1,4 +1,5 @@
-export function Logger(prefix = "", enabled = true) {
+export default function Logger(prefix = "", enabled = true) {
+  //main log function
   function log(...args) {
     if (!enabled) {
       return;
@@ -9,18 +10,13 @@ export function Logger(prefix = "", enabled = true) {
     } else {
       console.log(...args);
     }
-  }
 
-  function error(...args) {
-    if (!enabled) {
-      return;
-    }
-
-    if (prefix) {
-      console.error(prefix, ...args);
-    } else {
-      console.error(...args);
-    }
+    //error method
+    log.error = (...args) => {
+      if (enabled) {
+        console.error(prefix, ...args);
+      }
+    };
   }
-  return { log: log, error: error };
+  return log;
 }

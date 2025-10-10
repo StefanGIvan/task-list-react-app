@@ -1,11 +1,11 @@
-import "./App.css";
-
 import TaskList from "./components/tasklist/TaskList.jsx";
+
+import "./App.css";
 
 function App() {
   return (
-    <div style={{ padding: 25 }}>
-      <h1>TaskList App</h1>
+    <div className="app-shell">
+      <h1 className="app-title">TaskList App</h1>
 
       <TaskList title="To Do List" />
     </div>
