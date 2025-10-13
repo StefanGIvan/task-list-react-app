@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import TaskItem from "./TaskItem";
 
@@ -10,39 +10,55 @@ import "./TaskList.css";
 
 import EmptyState from "./EmptyState.jsx";
 
+import HeaderActions from "./HeaderActions.jsx";
+
 const log = logger("[TaskList]", true);
 
 export default function TaskList() {
-  // Keep track of the state of tasks & text
-  const [tasks, setTasks] = useLocalStorage("tasks", []);
-  const [text, setText] = useState("");
+  // Keep track of the state of taskArray & taskText
+  const [taskArray, setTaskArray] = useLocalStorage("taskArray", []);
+  const [taskText, setTaskText] = useState("");
 
-  //Log how much tasks we have on start
+  const alreadyLogged = useRef(false); //persist between renders (the logger doesn't log twice)
+
+  const totalCount = taskArray.length;
+  const checkedTasks = taskArray.filter((task) => {
+    return task.checked === true;
+  });
+  const selectedCount = checkedTasks.length;
+
+  // Log how many tasks we have on start (just once using useRef)
   useEffect(() => {
-    log("TaskList mounted with: ", tasks.length, " tasks");
-  }, []);
+    if (alreadyLogged.current) {
+      return;
+    }
+    alreadyLogged.current = true;
+    log("TaskList mounted with: ", taskArray.length, " taskArray");
+  });
 
   // Add new task
   function addTask(event) {
     event.preventDefault();
 
-    const taskText = text.trim();
-    if (!taskText) {
+    const trimTaskText = taskText.trim();
+    if (!trimTaskText) {
       return;
     }
 
     /* setTasks((prev) => [
       ...prev,
-      { id: Date.now().toString(), title: taskText },
+      { id: Date.now().toString(), title: trimmedTaskText },
     ]); */
 
     // Add a new task object to the list
-    setTasks(function (previousTasks) {
+    setTaskArray(function (previousTasks) {
       const updatedTasks = [...previousTasks];
 
       const newTask = {
-        id: Date.now().toString(), //returns the current timestamp in ms => number => string
-        title: text,
+        id: Date.now().toString(), //returns the current timestamp in ms => number => string (from React)
+        title: trimTaskText,
+        checked: false,
+        completed: false,
       };
 
       updatedTasks.push(newTask);
@@ -50,21 +66,22 @@ export default function TaskList() {
       return updatedTasks;
     });
 
-    setText("");
+    setTaskText("");
 
-    log("Task added:", taskText);
+    log("Task added:", trimTaskText);
   }
 
-  function toggleChecked(id, checked) {
-    setTasks(function (previousTasks) {
+  // Handles checking/unchecking a task (from TaskItem)
+  function toggleChecked(taskId, isChecked) {
+    setTaskArray(function (previousTasks) {
       //make a new array based on the old one
       const updatedTasks = previousTasks.map(function (task) {
         //if the task is found
-        if (task.id === id) {
+        if (task.id === taskId) {
           //copy all its old properties and update checked
           return {
             ...task,
-            checked: checked,
+            checked: isChecked,
           };
         } else {
           //otherwise leave the task as it is
@@ -75,32 +92,57 @@ export default function TaskList() {
       return updatedTasks;
     });
 
-    log("Toggled checked:", id, checked);
+    log("Toggled checked:", taskId, isChecked);
   }
 
-  // Delete a task by ID
-  function deleteTask(id) {
-    setTasks(function (previousTasks) {
+  // Deletes a task only if it's checked (from TaskItem)
+  function deleteTask(taskId) {
+    setTaskArray(function (previousTasks) {
       const updatedTasks = previousTasks.filter(function (task) {
-        return !(task.id == id && task.checked);
+        return !(task.id == taskId && task.checked);
       });
 
       return updatedTasks;
     });
 
-    log("Task deleted:", id);
+    log("Task deleted:", taskId);
   }
 
-  function toggleCompleted(id, completed) {
-    setTasks(function (previousTasks) {
+  // Mark a task as completed/uncompleted, if it's checked (from TaskItem)
+  function toggleCompleted(taskId, isCompleted) {
+    setTaskArray(function (previousTasks) {
       const updatedTasks = previousTasks.map(function (task) {
-        if (task.id === id && task.checked) {
-          return { ...task, completed: completed };
+        if (task.id === taskId && task.checked) {
+          return { ...task, completed: isCompleted };
         } else {
           return task;
         }
       });
 
+      return updatedTasks;
+    });
+  }
+
+  // Mark all checked tasks as completed (from HeaderActions)
+  function completeSelected() {
+    setTaskArray(function (previousTasks) {
+      const updatedTasks = previousTasks.map((task) => {
+        if (task.checked) {
+          return { ...task, completed: true };
+        } else {
+          return task;
+        }
+      });
+      return updatedTasks;
+    });
+  }
+
+  // Delete all tasks that are checked (from HeaderActions)
+  function deleteSelected() {
+    setTaskArray(function (previousTasks) {
+      const updatedTasks = previousTasks.filter((task) => {
+        return !task.checked;
+      });
       return updatedTasks;
     });
   }
@@ -111,11 +153,12 @@ export default function TaskList() {
       <section className="tasklist-card tasklist-form-card">
         <h2 className="tasklist-title">To Do List</h2>
 
+        {/*Tasklist form*/}
         <form className="tasklist-form" onSubmit={addTask}>
           <input
             className="tasklist-input"
-            value={text}
-            onChange={(event) => setText(event.target.value)}
+            value={taskText}
+            onChange={(event) => setTaskText(event.target.value)}
             placeholder="Write a task..."
           />
           <button className="tasklist-button" type="submit">
@@ -124,12 +167,21 @@ export default function TaskList() {
         </form>
       </section>
 
+      {/*Render HeaderActions between Tasklist form and Tasklist items*/}
+      <HeaderActions
+        selectedCount={selectedCount}
+        totalCount={totalCount}
+        onCompleteSelected={completeSelected}
+        onDeleteSelected={deleteSelected}
+      />
+
       <section className="tasklist-card tasklist-items-card">
-        {tasks.length === 0 ? (
+        {/*If taskArray length is zero, show EmptyState card, else show the TaskItem*/}
+        {taskArray.length === 0 ? (
           <EmptyState />
         ) : (
           <ul className="tasklist-items-container">
-            {tasks.map((task) => (
+            {taskArray.map((task) => (
               <TaskItem
                 key={task.id}
                 task={task}
@@ -141,9 +193,11 @@ export default function TaskList() {
           </ul>
         )}
       </section>
+
+      {/*Footer that shows tasks number*/}
       <footer className="tasklist-footer">
         <p>
-          {tasks.length} {tasks.lenngth === 1 ? "task" : "tasks"} total
+          {taskArray.length} {taskArray.length === 1 ? "task" : "tasks"} total
         </p>
       </footer>
     </div>

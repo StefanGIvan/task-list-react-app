@@ -25,7 +25,7 @@
   margin-left: auto;
 }
 
-.task-edit-btn:disabled {
+.task-complete-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -38,4 +38,49 @@
 .task-item.completed .task-title {
   text-decoration: line-through;
   opacity: 0.65;
+}
+
+.task-complete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.task-complete-btn:hover {
+  background-color: var(--blue);
+  box-shadow: 0 0 4px 8px var(--blue);
+}
+
+.complete-icon {
+  width: 25px;
+  height: 25px;
+}
+
+.undo-icon {
+  width: 25px;
+  height: 25px;
+}
+
+.task-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.delete-icon {
+  width: 25px;
+  height: 25px;
+}
+
+.task-delete-btn:hover {
+  background-color: var(--blue);
+  box-shadow: 0 0 4px 8px var(--blue);
 }

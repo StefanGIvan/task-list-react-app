@@ -6,6 +6,13 @@
 
 import "./TaskItem.css";
 
+//sgv files can be imported directly as components (because of Vite)
+import CompleteIcon from "../../assets/icons/complete.svg?react";
+
+import DeleteIcon from "../../assets/icons/delete.svg?react";
+
+import UndoIcon from "../../assets/icons/undo.svg?react";
+
 export default function TaskItem({
   task,
   onDelete,
@@ -51,10 +58,14 @@ export default function TaskItem({
       <div className="task-actions">
         <button
           type="button"
-          className="task-edit-btn"
+          className="task-complete-btn"
           onClick={handleCompleted}
         >
-          {task.completed ? "Undo" : "Complete"}
+          {task.completed ? (
+            <UndoIcon className="undo-icon" />
+          ) : (
+            <CompleteIcon className="complete-icon" />
+          )}
         </button>
 
         <button
@@ -62,7 +73,7 @@ export default function TaskItem({
           className="task-delete-btn"
           onClick={handleDelete}
         >
-          Delete
+          {<DeleteIcon className="delete-icon" />}
         </button>
       </div>
     </li>
