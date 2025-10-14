@@ -12,7 +12,11 @@ import EmptyState from "./EmptyState.jsx";
 
 import HeaderActions from "./HeaderActions.jsx";
 
+import TaskListManager from "../../managers/TaskListManager.js";
+
 const log = logger("[TaskList]", true);
+
+const manager = TaskListManager.getInstance();
 
 export default function TaskList() {
   // Keep track of the state of taskArray & taskText
@@ -39,116 +43,45 @@ export default function TaskList() {
   function addTask(event) {
     event.preventDefault();
 
-    const trimTaskText = taskText.trim();
-    if (!trimTaskText) {
-      return;
-    }
-
-    /* setTasks((prev) => [
-      ...prev,
-      { id: Date.now().toString(), title: trimmedTaskText },
-    ]); */
-
     // Add a new task object to the list
     setTaskArray(function (previousTasks) {
-      const updatedTasks = [...previousTasks];
-
-      const newTask = {
-        id: Date.now().toString(), //returns the current timestamp in ms => number => string (from React)
-        title: trimTaskText,
-        checked: false,
-        completed: false,
-      };
-
-      updatedTasks.push(newTask);
-
-      return updatedTasks;
+      //pass taskText as object literal(taskText: taskText, created on the spot)
+      return manager.addTask(previousTasks, { taskText });
     });
-
-    setTaskText("");
-
-    log("Task added:", trimTaskText);
   }
 
   // Handles checking/unchecking a task (from TaskItem)
-  function toggleChecked(taskId, isChecked) {
+  function toggleChecked(taskId, { isChecked }) {
     setTaskArray(function (previousTasks) {
-      //make a new array based on the old one
-      const updatedTasks = previousTasks.map(function (task) {
-        //if the task is found
-        if (task.id === taskId) {
-          //copy all its old properties and update checked
-          return {
-            ...task,
-            checked: isChecked,
-          };
-        } else {
-          //otherwise leave the task as it is
-          return task;
-        }
-      });
-      //return the new array
-      return updatedTasks;
+      return manager.toggleChecked(previousTasks, taskId, isChecked);
     });
-
-    log("Toggled checked:", taskId, isChecked);
   }
 
   // Deletes a task only if it's checked (from TaskItem)
-  function deleteTask(taskId) {
+  function deleteTask({ taskId }) {
     setTaskArray(function (previousTasks) {
-      const updatedTasks = previousTasks.filter(function (task) {
-        return task.id !== taskId;
-      });
-
-      return updatedTasks;
+      return manager.deleteTask(previousTasks, taskId);
     });
-
-    log("Task deleted: ", taskId);
-    log("taskArray length: ", totalCount);
   }
 
   // Mark a task as completed/uncompleted, if it's checked (from TaskItem)
-  function toggleCompleted(taskId, isCompleted) {
+  function toggleCompleted({ taskId }, { isCompleted }) {
     setTaskArray(function (previousTasks) {
-      const updatedTasks = previousTasks.map(function (task) {
-        if (task.id === taskId) {
-          return { ...task, completed: isCompleted };
-        } else {
-          return task;
-        }
-      });
-
-      return updatedTasks;
+      return manager.toggleCompleted(previousTasks, taskId, isCompleted);
     });
-    log("Task completed: ", taskId);
   }
 
   // Mark all checked tasks as completed (from HeaderActions)
   function completeSelected() {
     setTaskArray(function (previousTasks) {
-      const updatedTasks = previousTasks.map((task) => {
-        if (task.checked) {
-          return { ...task, completed: true, checked: false };
-        } else {
-          return task;
-        }
-      });
-      let completedTasks = previousTasks.length - updatedTasks.length;
-      log("Completed tasks: ", completedTasks);
-      return updatedTasks;
+      return manager.completeSelected(previousTasks);
     });
   }
 
   // Delete all tasks that are checked (from HeaderActions)
   function deleteSelected() {
     setTaskArray(function (previousTasks) {
-      const updatedTasks = previousTasks.filter((task) => {
-        return !task.checked;
-      });
-      let deletedTasks = previousTasks.length - updatedTasks.length;
-      log("Deleted tasks: ", deletedTasks);
-      return updatedTasks;
+      return manager.deleteSelected(previousTasks);
     });
   }
 
