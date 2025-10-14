@@ -19,6 +19,7 @@ export default function TaskItem({
   onToggleChecked,
   onToggleCompleted,
 }) {
+  // Functions that update the UI
   const handleChecked = (event) => {
     if (onToggleChecked) {
       onToggleChecked(task.id, event.target.checked);
@@ -26,18 +27,12 @@ export default function TaskItem({
   };
 
   const handleDelete = () => {
-    if (!task.checked) {
-      return;
-    }
     if (onDelete) {
       onDelete(task.id);
     }
   };
 
   const handleCompleted = () => {
-    if (!task.checked) {
-      return;
-    }
     if (onToggleCompleted) {
       onToggleCompleted(task.id, !task.completed);
     }

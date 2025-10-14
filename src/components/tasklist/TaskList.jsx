@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 import TaskItem from "./TaskItem";
 
@@ -19,22 +19,21 @@ export default function TaskList() {
   const [taskArray, setTaskArray] = useLocalStorage("taskArray", []);
   const [taskText, setTaskText] = useState("");
 
-  const alreadyLogged = useRef(false); //persist between renders (the logger doesn't log twice)
-
   const totalCount = taskArray.length;
   const checkedTasks = taskArray.filter((task) => {
     return task.checked === true;
   });
   const selectedCount = checkedTasks.length;
 
-  // Log how many tasks we have on start (just once using useRef)
+  // Log on start once (on mount)
   useEffect(() => {
-    if (alreadyLogged.current) {
-      return;
-    }
-    alreadyLogged.current = true;
-    log("TaskList mounted with: ", taskArray.length, " taskArray");
-  });
+    log("TaskList mounted");
+  }, []);
+
+  //Log the length of the taskArray every time it is modified (not just the length)
+  useEffect(() => {
+    log("Current nr. of tasks: ", taskArray.length);
+  }, [taskArray]);
 
   // Add new task
   function addTask(event) {
@@ -99,20 +98,21 @@ export default function TaskList() {
   function deleteTask(taskId) {
     setTaskArray(function (previousTasks) {
       const updatedTasks = previousTasks.filter(function (task) {
-        return !(task.id == taskId && task.checked);
+        return task.id !== taskId;
       });
 
       return updatedTasks;
     });
 
-    log("Task deleted:", taskId);
+    log("Task deleted: ", taskId);
+    log("taskArray length: ", totalCount);
   }
 
   // Mark a task as completed/uncompleted, if it's checked (from TaskItem)
   function toggleCompleted(taskId, isCompleted) {
     setTaskArray(function (previousTasks) {
       const updatedTasks = previousTasks.map(function (task) {
-        if (task.id === taskId && task.checked) {
+        if (task.id === taskId) {
           return { ...task, completed: isCompleted };
         } else {
           return task;
@@ -121,6 +121,7 @@ export default function TaskList() {
 
       return updatedTasks;
     });
+    log("Task completed: ", taskId);
   }
 
   // Mark all checked tasks as completed (from HeaderActions)
@@ -128,11 +129,13 @@ export default function TaskList() {
     setTaskArray(function (previousTasks) {
       const updatedTasks = previousTasks.map((task) => {
         if (task.checked) {
-          return { ...task, completed: true };
+          return { ...task, completed: true, checked: false };
         } else {
           return task;
         }
       });
+      let completedTasks = previousTasks.length - updatedTasks.length;
+      log("Completed tasks: ", completedTasks);
       return updatedTasks;
     });
   }
@@ -143,6 +146,8 @@ export default function TaskList() {
       const updatedTasks = previousTasks.filter((task) => {
         return !task.checked;
       });
+      let deletedTasks = previousTasks.length - updatedTasks.length;
+      log("Deleted tasks: ", deletedTasks);
       return updatedTasks;
     });
   }
