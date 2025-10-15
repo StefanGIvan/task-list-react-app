@@ -4,30 +4,59 @@ import logger from "../lib/logger";
 const log = logger("[TaskListManager]", true);
 
 export default class TaskListManager {
-  static #instance = null;
+  static _instance = null;
+  _tasks = [];
 
   static getInstance() {
-    if (!TaskListManager.#instance) {
-      TaskListManager.#instance = new TaskListManager();
+    if (!TaskListManager._instance) {
+      TaskListManager._instance = new TaskListManager();
     }
-    return TaskListManager.#instance;
+    return TaskListManager._instance;
   }
 
   constructor() {
     //prevent TaskListManager from outside -> in this way we have only one instance on that class on the entire app (that defines a singleton)
-    if (TaskListManager.#instance) {
+    if (TaskListManager._instance) {
       log.error("Use TaskListManager.getInstance()");
     }
+
+    const savedValue = localStorage.getItem("taskArray");
+
+    if (savedValue) {
+      try {
+        this._tasks = JSON.parse(savedValue);
+      } catch {
+        this._tasks = [];
+      }
+    }
+  }
+
+  _saveLocalStorage() {
+    const stringifiedValue = JSON.stringify(this._tasks);
+    localStorage.setItem("taskArray", stringifiedValue);
+  }
+
+  getSelectedCount() {
+    return this._tasks.filter((task) => task.checked).length;
+  }
+
+  getTotalCount() {
+    return this._tasks.length;
+  }
+
+  getList() {
+    //return the copy of the array
+    return [...this._tasks];
   }
 
   // Need taskArray to represent the current array (since useState is not used)
   // Need trimTaskText property of obj to set title (since useState is not used)
-  addTask(taskArray, taskText) {
+  addTask(taskText) {
     //if taskText is null/undefined, have a fallback
     taskText = taskText ?? "";
     const trimTaskText = taskText.trim();
     if (!trimTaskText) {
-      return;
+      return this.getList();
     }
 
     const newTask = {
@@ -37,46 +66,74 @@ export default class TaskListManager {
       completed: false,
     };
 
+    this._tasks = [...this._tasks, newTask];
+
+    this._saveLocalStorage();
+
     log("Task added: ", trimTaskText);
 
-    return [...taskArray, newTask];
+    return this.getList();
   }
 
-  toggleChecked(taskArray, id, isChecked) {
-    log("Toggled checked: ", id, isChecked);
-    return taskArray.map((task) =>
+  toggleChecked(id, isChecked) {
+    this._tasks = this._tasks.map((task) =>
       task.id === id ? { ...task, checked: isChecked } : task
     );
+
+    this._saveLocalStorage();
+
+    log("Toggled checked: ", id, isChecked);
+
+    return this.getList();
   }
 
-  deleteTask(taskArray, taskId) {
+  deleteTask(taskId) {
+    this._tasks = this._tasks.filter((task) => task.id !== taskId);
+
+    this._saveLocalStorage();
+
     log("Task deleted: ", taskId);
-    log("taskArray length: ", taskArray.length);
-    return taskArray.filter((task) => task.id !== taskId);
+
+    return this.getList();
   }
 
-  toggleCompleted(taskArray, taskId, isCompleted) {
-    log("Task completed: ", taskId);
-    return taskArray.map((task) =>
+  toggleCompleted(taskId, isCompleted) {
+    this._tasks = this._tasks.map((task) =>
       task.id === taskId ? { ...task, completed: isCompleted } : task
     );
+
+    this._saveLocalStorage();
+
+    log("Task completed: ", taskId);
+
+    return this.getList();
   }
 
-  completeSelected(taskArray) {
-    const completedTasksCount = taskArray.filter(
+  completeSelected() {
+    const checkedCount = this._tasks.filter(
       (task) => task.checked && !task.completed
     ).length;
-    log("Completed tasks: ", completedTasksCount);
 
-    return taskArray.map((task) =>
+    this._tasks = this._tasks.map((task) =>
       task.checked ? { ...task, completed: true } : task
     );
+
+    this._saveLocalStorage();
+
+    log("Completed tasks: ", checkedCount);
+
+    return this.getList();
   }
 
-  deleteSelected(taskArray) {
-    const deletedTasks = taskArray.filter((task) => task.checked).length;
+  deleteSelected() {
+    const deletedTasks = this._tasks.filter((task) => task.checked).length;
+
+    this._tasks = this._tasks.filter((task) => !task.checked);
+
+    this._saveLocalStorage();
+
     log("Deleted tasks: ", deletedTasks);
 
-    return taskArray.filter((task) => !task.checked);
+    return this.getList();
   }
 }
