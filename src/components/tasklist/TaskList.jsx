@@ -46,26 +46,28 @@ export default function TaskList() {
     // Add a new task object to the list
     setTaskArray(function (previousTasks) {
       //pass taskText as object literal(taskText: taskText, created on the spot)
-      return manager.addTask(previousTasks, { taskText });
+      return manager.addTask(previousTasks, taskText);
     });
+
+    setTaskText("");
   }
 
   // Handles checking/unchecking a task (from TaskItem)
-  function toggleChecked(taskId, { isChecked }) {
+  function toggleChecked(taskId, isChecked) {
     setTaskArray(function (previousTasks) {
       return manager.toggleChecked(previousTasks, taskId, isChecked);
     });
   }
 
   // Deletes a task only if it's checked (from TaskItem)
-  function deleteTask({ taskId }) {
+  function deleteTask(taskId) {
     setTaskArray(function (previousTasks) {
       return manager.deleteTask(previousTasks, taskId);
     });
   }
 
   // Mark a task as completed/uncompleted, if it's checked (from TaskItem)
-  function toggleCompleted({ taskId }, { isCompleted }) {
+  function toggleCompleted(taskId, isCompleted) {
     setTaskArray(function (previousTasks) {
       return manager.toggleCompleted(previousTasks, taskId, isCompleted);
     });

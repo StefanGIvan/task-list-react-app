@@ -1,3 +1,4 @@
+// Singleton Method Design
 import logger from "../lib/logger";
 
 const log = logger("[TaskListManager]", true);
@@ -21,7 +22,7 @@ export default class TaskListManager {
 
   // Need taskArray to represent the current array (since useState is not used)
   // Need trimTaskText property of obj to set title (since useState is not used)
-  addTask(taskArray, { taskText }) {
+  addTask(taskArray, taskText) {
     //if taskText is null/undefined, have a fallback
     taskText = taskText ?? "";
     const trimTaskText = taskText.trim();
@@ -41,20 +42,20 @@ export default class TaskListManager {
     return [...taskArray, newTask];
   }
 
-  toggleChecked(taskArray, id, { isChecked }) {
+  toggleChecked(taskArray, id, isChecked) {
     log("Toggled checked: ", id, isChecked);
     return taskArray.map((task) =>
-      taskArray.id === id ? { ...task, checked: isChecked } : task
+      task.id === id ? { ...task, checked: isChecked } : task
     );
   }
 
-  deleteTask(taskArray, { taskId }) {
+  deleteTask(taskArray, taskId) {
     log("Task deleted: ", taskId);
     log("taskArray length: ", taskArray.length);
     return taskArray.filter((task) => task.id !== taskId);
   }
 
-  toggleCompleted(taskArray, { taskId }, { isCompleted }) {
+  toggleCompleted(taskArray, taskId, isCompleted) {
     log("Task completed: ", taskId);
     return taskArray.map((task) =>
       task.id === taskId ? { ...task, completed: isCompleted } : task
