@@ -169,7 +169,9 @@ export default class TaskListManager {
 
     this._persistTasks();
 
-    deletedTasks.forEach((task) => log("Task deleted: ", task.id));
+    deletedTasks.forEach((task) =>
+      log("[deleteSelected] Task deleted: ", task.id)
+    );
     log("[deleteSelected] Deleted count: ", deletedTasksCount);
 
     return this.getList();
