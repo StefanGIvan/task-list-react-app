@@ -1,4 +1,4 @@
-import "./HeaderActions.css";
+import "./styles/HeaderActions.css";
 
 //sgv files can be imported directly as components (because of Vite)
 import BulkCompleteIcon from "../../assets/icons/bulkComplete.svg?react";

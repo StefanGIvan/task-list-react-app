@@ -1,11 +1,7 @@
 // A single row in TaskList
 // Keeps no state of its own
 // Calls the callbacks it receives from TaskList.jsx
-
 //props sent from the parent
-
-import "./TaskItem.css";
-
 //sgv files can be imported directly as components (because of Vite)
 import CompleteIcon from "../../assets/icons/complete.svg?react";
 
@@ -13,16 +9,18 @@ import DeleteIcon from "../../assets/icons/delete.svg?react";
 
 import UndoIcon from "../../assets/icons/undo.svg?react";
 
+import "./styles/TaskItem.css";
+
 export default function TaskItem({
   task,
   onDelete,
-  onToggleChecked,
+  onUpdateChecked,
   onToggleCompleted,
 }) {
   // Functions that update the UI
   const handleChecked = (event) => {
-    if (onToggleChecked) {
-      onToggleChecked(task.id, event.target.checked);
+    if (onUpdateChecked) {
+      onUpdateChecked(task.id, event.target.checked);
     }
   };
 

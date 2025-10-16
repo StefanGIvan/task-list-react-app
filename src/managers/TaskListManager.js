@@ -27,7 +27,7 @@ export default class TaskListManager {
     //the first time, _instance is still null so it doesn't trigger the error
     //block the creation
     if (TaskListManager._instance) {
-      throw new Error("Use TaskListManager.getInstance()");
+      throw new Error("[constructor] Use TaskListManager.getInstance()");
     }
 
     //Load persisted tasks from localStorage/else create an array
@@ -36,8 +36,10 @@ export default class TaskListManager {
     if (savedValue) {
       try {
         this._taskArray = JSON.parse(savedValue);
+        log("[constructor] Array parsed successfully");
       } catch {
         this._taskArray = [];
+        log("[constructor] Array is assigned empty");
       }
     }
   }
@@ -47,6 +49,7 @@ export default class TaskListManager {
   _persistTasks() {
     const stringifiedValue = JSON.stringify(this._taskArray);
     localStorage.setItem("taskArray", stringifiedValue);
+    log("[_persistTasks] Persisted localStorage");
   }
 
   //Returns the number of tasks that are currently checked
@@ -71,6 +74,7 @@ export default class TaskListManager {
     const trimTaskText = taskText.trim();
     //if the text is empty, don't create a new task
     if (!trimTaskText) {
+      log("[addTask] Task Input was empty");
       return this.getList();
     }
 
@@ -85,7 +89,7 @@ export default class TaskListManager {
     this._taskArray = [...this._taskArray, newTask];
     this._persistTasks();
 
-    log("Task added: ", trimTaskText);
+    log("[addTask] Task added:", trimTaskText);
 
     return this.getList();
   }
@@ -98,7 +102,7 @@ export default class TaskListManager {
 
     this._persistTasks();
 
-    log("Toggled checked: ", id, isChecked);
+    log("[updateChecked] Toggled checked: ", id, " Value: ", isChecked);
 
     return this.getList();
   }
@@ -109,7 +113,7 @@ export default class TaskListManager {
 
     this._persistTasks();
 
-    log("Task deleted: ", taskId);
+    log("[deleteTask] Task deleted: ", taskId);
 
     return this.getList();
   }
@@ -122,7 +126,7 @@ export default class TaskListManager {
 
     this._persistTasks();
 
-    log("Task completed: ", taskId);
+    log("[updateCompleted] Task completed: ", taskId, " Value: ", isCompleted);
 
     return this.getList();
   }
@@ -130,9 +134,11 @@ export default class TaskListManager {
   //Marks all the checked tasks as completed
   //Logs the number of completed tasks by counting them before modifing the array
   completeSelected() {
-    const checkedCount = this._taskArray.filter(
-      (task) => task.checked && !task.completed
+    const checkedTasksCount = this._taskArray.filter(
+      (task) => task.checked
     ).length;
+
+    const selectedTasks = this._taskArray.filter((task) => task.checked);
 
     this._taskArray = this._taskArray.map((task) =>
       task.checked ? { ...task, completed: true } : task
@@ -140,7 +146,10 @@ export default class TaskListManager {
 
     this._persistTasks();
 
-    log("Completed tasks: ", checkedCount);
+    selectedTasks.forEach((task) =>
+      log("[completeSelected] Completed tasks: ", task.id)
+    );
+    log("[completeSelected] Completed tasks: ", checkedTasksCount);
 
     return this.getList();
   }
@@ -148,13 +157,20 @@ export default class TaskListManager {
   //Deletes all checked tasks
   //Logs how many tasks were removed
   deleteSelected() {
-    const deletedTasks = this._taskArray.filter((task) => task.checked).length;
+    //Determine how many tasks will be deleted
+    const deletedTasksCount = this._taskArray.filter(
+      (task) => task.checked
+    ).length;
+
+    //Retain deleted in an array for log
+    const deletedTasks = this._taskArray.filter((task) => task.checked);
 
     this._taskArray = this._taskArray.filter((task) => !task.checked);
 
     this._persistTasks();
 
-    log("Deleted tasks: ", deletedTasks);
+    deletedTasks.forEach((task) => log("Task deleted: ", task.id));
+    log("[deleteSelected] Deleted count: ", deletedTasksCount);
 
     return this.getList();
   }

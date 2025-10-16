@@ -1,20 +1,24 @@
 // UI component responsible for rendering and updating the task list
-// Delegates delegates state management and data persistance to TaskListManager (Singleton)
+// Delegates state management and data persistance to TaskListManager (Singleton)
 
 import { useState, useEffect } from "react";
 
 import TaskItem from "./TaskItem";
 
-import "./TaskList.css";
+import HeaderActions from "./HeaderActions";
 
-import EmptyState from "./EmptyState.jsx";
-
-import HeaderActions from "./HeaderActions.jsx";
+import EmptyState from "./EmptyState";
 
 import TaskListManager from "../../managers/TaskListManager.js";
 
+import Logger from "../../lib/logger.js";
+
+import "./styles/TaskList.css";
+
 //get the global singleton instance
 const manager = TaskListManager.getInstance();
+
+const log = new Logger();
 
 export default function TaskList() {
   //UI state - hold the current list and text input
@@ -25,6 +29,8 @@ export default function TaskList() {
   //On mount, sync the component data with the manager
   useEffect(() => {
     setTaskArray(manager.getList());
+
+    log("Mounted");
   }, []);
 
   // Add new task
@@ -100,7 +106,7 @@ export default function TaskList() {
                 key={task.id}
                 task={task}
                 onDelete={deleteTask}
-                onToggleChecked={updateChecked}
+                onUpdateChecked={updateChecked}
                 onToggleCompleted={updateCompleted}
               />
             ))}
