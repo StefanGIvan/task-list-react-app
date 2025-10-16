@@ -1,3 +1,6 @@
+// UI component responsible for rendering and updating the task list
+// Delegates delegates state management and data persistance to TaskListManager (Singleton)
+
 import { useState, useEffect } from "react";
 
 import TaskItem from "./TaskItem";
@@ -10,12 +13,16 @@ import HeaderActions from "./HeaderActions.jsx";
 
 import TaskListManager from "../../managers/TaskListManager.js";
 
+//get the global singleton instance
 const manager = TaskListManager.getInstance();
 
 export default function TaskList() {
+  //UI state - hold the current list and text input
+  //the data lives in the manager
   const [taskArray, setTaskArray] = useState(manager.getList());
   const [taskText, setTaskText] = useState("");
 
+  //On mount, sync the component data with the manager
   useEffect(() => {
     setTaskArray(manager.getList());
   }, []);
@@ -30,8 +37,8 @@ export default function TaskList() {
   }
 
   // Handles checking/unchecking a task (from TaskItem)
-  function toggleChecked(taskId, isChecked) {
-    setTaskArray(manager.toggleChecked(taskId, isChecked));
+  function updateChecked(taskId, isChecked) {
+    setTaskArray(manager.updateChecked(taskId, isChecked));
   }
 
   // Deletes a task only if it's checked (from TaskItem)
@@ -40,8 +47,8 @@ export default function TaskList() {
   }
 
   // Mark a task as completed/uncompleted, if it's checked (from TaskItem)
-  function toggleCompleted(taskId, isCompleted) {
-    setTaskArray(manager.toggleCompleted(taskId, isCompleted));
+  function updateCompleted(taskId, isCompleted) {
+    setTaskArray(manager.updateCompleted(taskId, isCompleted));
   }
 
   // Mark all checked tasks as completed (from HeaderActions)
@@ -54,7 +61,7 @@ export default function TaskList() {
     setTaskArray(manager.deleteSelected());
   }
 
-  //JSX
+  //UI Rendering
   return (
     <div className="tasklist-container">
       <section className="tasklist-card tasklist-form-card">
@@ -76,8 +83,8 @@ export default function TaskList() {
 
       {/*Render HeaderActions between Tasklist form and Tasklist items*/}
       <HeaderActions
-        selectedCount={manager.getSelectedCount()}
-        totalCount={manager.getTotalCount()}
+        selectedCount={manager.selectedCount()}
+        totalCount={manager.totalCount()}
         onCompleteSelected={completeSelected}
         onDeleteSelected={deleteSelected}
       />
@@ -93,8 +100,8 @@ export default function TaskList() {
                 key={task.id}
                 task={task}
                 onDelete={deleteTask}
-                onToggleChecked={toggleChecked}
-                onToggleCompleted={toggleCompleted}
+                onToggleChecked={updateChecked}
+                onToggleCompleted={updateCompleted}
               />
             ))}
           </ul>
