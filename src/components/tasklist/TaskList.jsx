@@ -16,9 +16,10 @@ import Logger from "../../lib/logger.js";
 import "./styles/TaskList.css";
 
 //get the global singleton instance
+//should not init at the start of the app if we have other code not needed to render from the start*
 const manager = TaskListManager.getInstance();
 
-const log = new Logger();
+const log = Logger("[TaskList]", true);
 
 export default function TaskList() {
   //UI state - hold the current list and text input
@@ -27,6 +28,7 @@ export default function TaskList() {
   const [taskText, setTaskText] = useState("");
 
   //On mount, sync the component data with the manager
+  //init dispatch function redux read localStorage*
   useEffect(() => {
     setTaskArray(manager.getList());
 
@@ -43,13 +45,35 @@ export default function TaskList() {
   }
 
   // Handles checking/unchecking a task (from TaskItem)
+  // Toggle the checked state of a specific task
   function updateChecked(taskId, isChecked) {
-    setTaskArray(manager.updateChecked(taskId, isChecked));
+    const currentTaskArray = manager.getList();
+
+    const index = currentTaskArray.findIndex((task) => task.id === taskId);
+
+    //if no match is found
+    if (index === -1) {
+      log("[updateChecked] task index not found: ", taskId);
+      return;
+    }
+
+    //take the array and update the checked property
+    const updatedTaskArray = [...currentTaskArray];
+    updatedTaskArray[index].checked = isChecked;
+
+    //update the manager array to be in sync with useState and persist
+    manager.setList(updatedTaskArray);
+
+    //update the useState array
+    setTaskArray(updatedTaskArray);
+
+    log("[updateChecked] Toggled checked: ", taskId, " Value: ", isChecked);
   }
 
   // Deletes a task only if it's checked (from TaskItem)
   function deleteTask(taskId) {
     setTaskArray(manager.deleteTask(taskId));
+    //logs
   }
 
   // Mark a task as completed/uncompleted, if it's checked (from TaskItem)

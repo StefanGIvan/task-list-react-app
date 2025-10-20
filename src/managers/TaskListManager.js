@@ -26,6 +26,7 @@ export default class TaskListManager {
     //prevent direct instantiation using "new TaskListManager()"
     //the first time, _instance is still null so it doesn't trigger the error
     //block the creation
+    //not needed*
     if (TaskListManager._instance) {
       throw new Error("[constructor] Use TaskListManager.getInstance()");
     }
@@ -35,7 +36,13 @@ export default class TaskListManager {
 
     if (savedValue) {
       try {
-        this._taskArray = JSON.parse(savedValue);
+        const parsed = (this._taskArray = JSON.parse(savedValue));
+
+        this._taskArray = parsed.map((task) => ({
+          ...task,
+          checked: false,
+        }));
+
         log("[constructor] Array parsed successfully");
       } catch {
         this._taskArray = [];
@@ -44,10 +51,23 @@ export default class TaskListManager {
     }
   }
 
+  // Method to give the list to updateChecked to satisfy private methods
+  setList(nextList) {
+    this._taskArray = Array.isArray(nextList) ? nextList : [];
+
+    this._persistTasks();
+
+    return this.getList();
+  }
+
   //Save the current task array to localStorage
   //Used after every operation that modifies _taskArray
   _persistTasks() {
-    const stringifiedValue = JSON.stringify(this._taskArray);
+    const updateStorage = this._taskArray.map((task) => {
+      const { checked: _checked, ...rest } = task;
+      return rest;
+    });
+    const stringifiedValue = JSON.stringify(updateStorage);
     localStorage.setItem("taskArray", stringifiedValue);
     log("[_persistTasks] Persisted localStorage");
   }
@@ -62,7 +82,7 @@ export default class TaskListManager {
     return this._taskArray.length;
   }
 
-  //Return the copy of the array
+  //Return the copy of the array/ return directly the task array
   getList() {
     return [...this._taskArray];
   }
@@ -94,19 +114,6 @@ export default class TaskListManager {
     return this.getList();
   }
 
-  //Toggle the checked state of a specific task
-  updateChecked(id, isChecked) {
-    this._taskArray = this._taskArray.map((task) =>
-      task.id === id ? { ...task, checked: isChecked } : task
-    );
-
-    this._persistTasks();
-
-    log("[updateChecked] Toggled checked: ", id, " Value: ", isChecked);
-
-    return this.getList();
-  }
-
   //Deletes the task
   deleteTask(taskId) {
     this._taskArray = this._taskArray.filter((task) => task.id !== taskId);
@@ -118,11 +125,12 @@ export default class TaskListManager {
     return this.getList();
   }
 
+  //find + boolean function*
   //Marks a specific task completed/uncompleted
   updateCompleted(taskId, isCompleted) {
-    this._taskArray = this._taskArray.map((task) =>
-      task.id === taskId ? { ...task, completed: isCompleted } : task
-    );
+    const index = this._taskArray.findIndex((task) => task.id === taskId);
+
+    this._taskArray[index].completed = isCompleted;
 
     this._persistTasks();
 
@@ -134,11 +142,8 @@ export default class TaskListManager {
   //Marks all the checked tasks as completed
   //Logs the number of completed tasks by counting them before modifing the array
   completeSelected() {
-    const checkedTasksCount = this._taskArray.filter(
-      (task) => task.checked
-    ).length;
-
     const selectedTasks = this._taskArray.filter((task) => task.checked);
+    const checkedTasksCount = selectedTasks.length;
 
     this._taskArray = this._taskArray.map((task) =>
       task.checked ? { ...task, completed: true } : task
@@ -157,13 +162,9 @@ export default class TaskListManager {
   //Deletes all checked tasks
   //Logs how many tasks were removed
   deleteSelected() {
-    //Determine how many tasks will be deleted
-    const deletedTasksCount = this._taskArray.filter(
-      (task) => task.checked
-    ).length;
-
-    //Retain deleted in an array for log
+    //Retain deleted in ana array for log
     const deletedTasks = this._taskArray.filter((task) => task.checked);
+    const deletedTasksCount = deletedTasks.length; //Determine how many tasks will be deleted
 
     this._taskArray = this._taskArray.filter((task) => !task.checked);
 
