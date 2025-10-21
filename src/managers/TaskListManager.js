@@ -101,8 +101,8 @@ export default class TaskListManager {
     const newTask = {
       id: Date.now().toString(),
       title: trimTaskText,
-      checked: false,
       completed: false,
+      date: Date.now().toString(),
     };
 
     //append new task and persist
@@ -142,6 +142,8 @@ export default class TaskListManager {
   //Marks all the checked tasks as completed
   //Logs the number of completed tasks by counting them before modifing the array
   completeSelected() {
+    //completeTasks(taskIds)
+    //give the manager a list of tasks to be completed (a list of tasks or a list of task ids)
     const selectedTasks = this._taskArray.filter((task) => task.checked);
     const checkedTasksCount = selectedTasks.length;
 

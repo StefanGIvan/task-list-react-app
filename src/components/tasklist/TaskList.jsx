@@ -24,6 +24,7 @@ const log = Logger("[TaskList]", true);
 export default function TaskList() {
   //UI state - hold the current list and text input
   //the data lives in the manager
+  const [selectedTaskArray, setSelectedTaskArray] = useState([]);
   const [taskArray, setTaskArray] = useState(manager.getList());
   const [taskText, setTaskText] = useState("");
 
@@ -47,27 +48,33 @@ export default function TaskList() {
   // Handles checking/unchecking a task (from TaskItem)
   // Toggle the checked state of a specific task
   function updateChecked(taskId, isChecked) {
-    const currentTaskArray = manager.getList();
-
-    const index = currentTaskArray.findIndex((task) => task.id === taskId);
-
-    //if no match is found
-    if (index === -1) {
-      log("[updateChecked] task index not found: ", taskId);
-      return;
-    }
+    //move functions from manager to tasklist; can stay in manager but can take a parameter(setSelectedTaskArray)
+    //remove logic of check from manager
+    //check just here where we have the array
 
     //take the array and update the checked property
-    const updatedTaskArray = [...currentTaskArray];
-    updatedTaskArray[index].checked = isChecked;
+    setSelectedTaskArray((previousTasks) => {
+      const index = findIndexTask(previousTasks, taskId);
 
-    //update the manager array to be in sync with useState and persist
-    manager.setList(updatedTaskArray);
-
-    //update the useState array
-    setTaskArray(updatedTaskArray);
+      //for re-rendering
+      let newArray = [...previousTasks];
+      newArray[index] = { ...newArray[index], checked: isChecked };
+      return newArray;
+    });
 
     log("[updateChecked] Toggled checked: ", taskId, " Value: ", isChecked);
+  }
+
+  function findIndexTask(taskArray, taskId) {
+    const index = taskArray.findIndex((task) => task.id === taskId);
+
+    if (index === -1) {
+      log("[updateChecked] task index not found: ", taskId);
+
+      return false;
+    }
+
+    return index;
   }
 
   // Deletes a task only if it's checked (from TaskItem)
