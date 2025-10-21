@@ -1,91 +1,97 @@
+// UI component responsible for rendering and updating the task list
+// Delegates state management and data persistance to TaskListManager (Singleton)
+
 import { useState, useEffect } from "react";
 
 import TaskItem from "./TaskItem";
 
-import useLocalStorage from "./../../hooks/useLocalStorage.jsx";
+import HeaderActions from "./HeaderActions";
 
-import logger from "../../lib/logger.js";
-
-import "./TaskList.css";
-
-import EmptyState from "./EmptyState.jsx";
-
-import HeaderActions from "./HeaderActions.jsx";
+import EmptyState from "./EmptyState";
 
 import TaskListManager from "../../managers/TaskListManager.js";
 
-const log = logger("[TaskList]", true);
+import Logger from "../../lib/logger.js";
 
+import "./styles/TaskList.css";
+
+//get the global singleton instance
+//should not init at the start of the app if we have other code not needed to render from the start*
 const manager = TaskListManager.getInstance();
 
+const log = Logger("[TaskList]", true);
+
 export default function TaskList() {
-  // Keep track of the state of taskArray & taskText
-  const [taskArray, setTaskArray] = useLocalStorage("taskArray", []);
+  //UI state - hold the current list and text input
+  //the data lives in the manager
+  const [taskArray, setTaskArray] = useState(manager.getList());
   const [taskText, setTaskText] = useState("");
 
-  const totalCount = taskArray.length;
-  const checkedTasks = taskArray.filter((task) => {
-    return task.checked === true;
-  });
-  const selectedCount = checkedTasks.length;
-
-  // Log on start once (on mount)
+  //On mount, sync the component data with the manager
+  //init dispatch function redux read localStorage*
   useEffect(() => {
-    log("TaskList mounted");
+    setTaskArray(manager.getList());
+
+    log("Mounted");
   }, []);
-
-  //Log the length of the taskArray every time it is modified (not just the length)
-  useEffect(() => {
-    log("Current nr. of tasks: ", taskArray.length);
-  }, [taskArray]);
 
   // Add new task
   function addTask(event) {
     event.preventDefault();
 
-    // Add a new task object to the list
-    setTaskArray(function (previousTasks) {
-      //pass taskText as object literal(taskText: taskText, created on the spot)
-      return manager.addTask(previousTasks, { taskText });
-    });
+    setTaskArray(manager.addTask(taskText));
+
+    setTaskText("");
   }
 
   // Handles checking/unchecking a task (from TaskItem)
-  function toggleChecked(taskId, { isChecked }) {
-    setTaskArray(function (previousTasks) {
-      return manager.toggleChecked(previousTasks, taskId, isChecked);
-    });
+  // Toggle the checked state of a specific task
+  function updateChecked(taskId, isChecked) {
+    const currentTaskArray = manager.getList();
+
+    const index = currentTaskArray.findIndex((task) => task.id === taskId);
+
+    //if no match is found
+    if (index === -1) {
+      log("[updateChecked] task index not found: ", taskId);
+      return;
+    }
+
+    //take the array and update the checked property
+    const updatedTaskArray = [...currentTaskArray];
+    updatedTaskArray[index].checked = isChecked;
+
+    //update the manager array to be in sync with useState and persist
+    manager.setList(updatedTaskArray);
+
+    //update the useState array
+    setTaskArray(updatedTaskArray);
+
+    log("[updateChecked] Toggled checked: ", taskId, " Value: ", isChecked);
   }
 
   // Deletes a task only if it's checked (from TaskItem)
-  function deleteTask({ taskId }) {
-    setTaskArray(function (previousTasks) {
-      return manager.deleteTask(previousTasks, taskId);
-    });
+  function deleteTask(taskId) {
+    setTaskArray(manager.deleteTask(taskId));
+    //logs
   }
 
   // Mark a task as completed/uncompleted, if it's checked (from TaskItem)
-  function toggleCompleted({ taskId }, { isCompleted }) {
-    setTaskArray(function (previousTasks) {
-      return manager.toggleCompleted(previousTasks, taskId, isCompleted);
-    });
+  function updateCompleted(taskId, isCompleted) {
+    setTaskArray(manager.updateCompleted(taskId, isCompleted));
   }
 
   // Mark all checked tasks as completed (from HeaderActions)
   function completeSelected() {
-    setTaskArray(function (previousTasks) {
-      return manager.completeSelected(previousTasks);
-    });
+    setTaskArray(manager.completeSelected());
   }
 
   // Delete all tasks that are checked (from HeaderActions)
   function deleteSelected() {
-    setTaskArray(function (previousTasks) {
-      return manager.deleteSelected(previousTasks);
-    });
+    setTaskArray(manager.deleteSelected());
   }
 
-  //JSX
+  //UI Rendering
   return (
     <div className="tasklist-container">
       <section className="tasklist-card tasklist-form-card">
@@ -107,8 +113,8 @@ export default function TaskList() {
 
       {/*Render HeaderActions between Tasklist form and Tasklist items*/}
       <HeaderActions
-        selectedCount={selectedCount}
-        totalCount={totalCount}
+        selectedCount={manager.selectedCount()}
+        totalCount={manager.totalCount()}
         onCompleteSelected={completeSelected}
         onDeleteSelected={deleteSelected}
       />
@@ -124,8 +130,8 @@ export default function TaskList() {
                 key={task.id}
                 task={task}
                 onDelete={deleteTask}
-                onToggleChecked={toggleChecked}
-                onToggleCompleted={toggleCompleted}
+                onUpdateChecked={updateChecked}
+                onToggleCompleted={updateCompleted}
               />
             ))}
           </ul>

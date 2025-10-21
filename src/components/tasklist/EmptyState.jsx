@@ -1,4 +1,4 @@
-import "./EmptyState.css";
+import "./styles/EmptyState.css";
 
 export default function EmptyState() {
   return (

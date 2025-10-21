@@ -1,32 +1,101 @@
+// Singleton Method Design
+// This class manages all task-related data and ensures there's only one source of truth
+// Handles persistence via localStorage
+// Has methods that modify and return the updated list
 import logger from "../lib/logger";
 
 const log = logger("[TaskListManager]", true);
 
 export default class TaskListManager {
-  static #instance = null;
+  //static property holding the single instance
+  static _instance = null;
+  //private array that stores the tasks in current memory
+  _taskArray = [];
 
+  //returns the single instance of TaskListManager, so an instance holds all tasks
+  //if it doesn't exist yet, it creates it
   static getInstance() {
-    if (!TaskListManager.#instance) {
-      TaskListManager.#instance = new TaskListManager();
+    if (!TaskListManager._instance) {
+      TaskListManager._instance = new TaskListManager();
     }
-    return TaskListManager.#instance;
+    return TaskListManager._instance;
   }
 
+  //Private constructor
   constructor() {
-    //prevent TaskListManager from outside -> in this way we have only one instance on that class on the entire app (that defines a singleton)
-    if (TaskListManager.#instance) {
-      log.error("Use TaskListManager.getInstance()");
+    //prevent direct instantiation using "new TaskListManager()"
+    //the first time, _instance is still null so it doesn't trigger the error
+    //block the creation
+    //not needed*
+    if (TaskListManager._instance) {
+      throw new Error("[constructor] Use TaskListManager.getInstance()");
+    }
+
+    //Load persisted tasks from localStorage/else create an array
+    const savedValue = localStorage.getItem("taskArray");
+
+    if (savedValue) {
+      try {
+        const parsed = (this._taskArray = JSON.parse(savedValue));
+
+        this._taskArray = parsed.map((task) => ({
+          ...task,
+          checked: false,
+        }));
+
+        log("[constructor] Array parsed successfully");
+      } catch {
+        this._taskArray = [];
+        log("[constructor] Array is assigned empty");
+      }
     }
   }
 
-  // Need taskArray to represent the current array (since useState is not used)
-  // Need trimTaskText property of obj to set title (since useState is not used)
-  addTask(taskArray, { taskText }) {
+  // Method to give the list to updateChecked to satisfy private methods
+  setList(nextList) {
+    this._taskArray = Array.isArray(nextList) ? nextList : [];
+
+    this._persistTasks();
+
+    return this.getList();
+  }
+
+  //Save the current task array to localStorage
+  //Used after every operation that modifies _taskArray
+  _persistTasks() {
+    const updateStorage = this._taskArray.map((task) => {
+      const { checked: _checked, ...rest } = task;
+      return rest;
+    });
+    const stringifiedValue = JSON.stringify(updateStorage);
+    localStorage.setItem("taskArray", stringifiedValue);
+    log("[_persistTasks] Persisted localStorage");
+  }
+
+  //Returns the number of tasks that are currently checked
+  selectedCount() {
+    return this._taskArray.filter((task) => task.checked).length;
+  }
+
+  //Returns the total number of tasks stored
+  totalCount() {
+    return this._taskArray.length;
+  }
+
+  //Return the copy of the array/ return directly the task array
+  getList() {
+    return [...this._taskArray];
+  }
+
+  //Add a new task to the list
+  addTask(taskText) {
     //if taskText is null/undefined, have a fallback
     taskText = taskText ?? "";
     const trimTaskText = taskText.trim();
+    //if the text is empty, don't create a new task
     if (!trimTaskText) {
-      return;
+      log("[addTask] Task Input was empty");
+      return this.getList();
     }
 
     const newTask = {
@@ -36,46 +105,76 @@ export default class TaskListManager {
       completed: false,
     };
 
-    log("Task added: ", trimTaskText);
+    //append new task and persist
+    this._taskArray = [...this._taskArray, newTask];
+    this._persistTasks();
 
-    return [...taskArray, newTask];
+    log("[addTask] Task added:", trimTaskText);
+
+    return this.getList();
   }
 
-  toggleChecked(taskArray, id, { isChecked }) {
-    log("Toggled checked: ", id, isChecked);
-    return taskArray.map((task) =>
-      taskArray.id === id ? { ...task, checked: isChecked } : task
-    );
+  //Deletes the task
+  deleteTask(taskId) {
+    this._taskArray = this._taskArray.filter((task) => task.id !== taskId);
+
+    this._persistTasks();
+
+    log("[deleteTask] Task deleted: ", taskId);
+
+    return this.getList();
   }
 
-  deleteTask(taskArray, { taskId }) {
-    log("Task deleted: ", taskId);
-    log("taskArray length: ", taskArray.length);
-    return taskArray.filter((task) => task.id !== taskId);
+  //find + boolean function*
+  //Marks a specific task completed/uncompleted
+  updateCompleted(taskId, isCompleted) {
+    const index = this._taskArray.findIndex((task) => task.id === taskId);
+
+    this._taskArray[index].completed = isCompleted;
+
+    this._persistTasks();
+
+    log("[updateCompleted] Task completed: ", taskId, " Value: ", isCompleted);
+
+    return this.getList();
   }
 
-  toggleCompleted(taskArray, { taskId }, { isCompleted }) {
-    log("Task completed: ", taskId);
-    return taskArray.map((task) =>
-      task.id === taskId ? { ...task, completed: isCompleted } : task
-    );
-  }
+  //Marks all the checked tasks as completed
+  //Logs the number of completed tasks by counting them before modifing the array
+  completeSelected() {
+    const selectedTasks = this._taskArray.filter((task) => task.checked);
+    const checkedTasksCount = selectedTasks.length;
 
-  completeSelected(taskArray) {
-    const completedTasksCount = taskArray.filter(
-      (task) => task.checked && !task.completed
-    ).length;
-    log("Completed tasks: ", completedTasksCount);
-
-    return taskArray.map((task) =>
+    this._taskArray = this._taskArray.map((task) =>
       task.checked ? { ...task, completed: true } : task
     );
+
+    this._persistTasks();
+
+    selectedTasks.forEach((task) =>
+      log("[completeSelected] Completed tasks: ", task.id)
+    );
+    log("[completeSelected] Completed tasks: ", checkedTasksCount);
+
+    return this.getList();
   }
 
-  deleteSelected(taskArray) {
-    const deletedTasks = taskArray.filter((task) => task.checked).length;
-    log("Deleted tasks: ", deletedTasks);
+  //Deletes all checked tasks
+  //Logs how many tasks were removed
+  deleteSelected() {
+    //Retain deleted in ana array for log
+    const deletedTasks = this._taskArray.filter((task) => task.checked);
+    const deletedTasksCount = deletedTasks.length; //Determine how many tasks will be deleted
 
-    return taskArray.filter((task) => !task.checked);
+    this._taskArray = this._taskArray.filter((task) => !task.checked);
+
+    this._persistTasks();
+
+    deletedTasks.forEach((task) =>
+      log("[deleteSelected] Task deleted: ", task.id)
+    );
+    log("[deleteSelected] Deleted count: ", deletedTasksCount);
+
+    return this.getList();
   }
 }
