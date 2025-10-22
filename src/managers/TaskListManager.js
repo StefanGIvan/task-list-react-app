@@ -23,51 +23,30 @@ export default class TaskListManager {
 
   //Private constructor
   constructor() {
-    //prevent direct instantiation using "new TaskListManager()"
-    //the first time, _instance is still null so it doesn't trigger the error
-    //block the creation
-    //not needed*
-    if (TaskListManager._instance) {
-      throw new Error("[constructor] Use TaskListManager.getInstance()");
-    }
-
     //Load persisted tasks from localStorage/else create an array
     const savedValue = localStorage.getItem("taskArray");
 
     if (savedValue) {
       try {
-        const parsed = (this._taskArray = JSON.parse(savedValue));
-
-        this._taskArray = parsed.map((task) => ({
-          ...task,
-          checked: false,
-        }));
+        this._taskArray = JSON.parse(savedValue);
 
         log("[constructor] Array parsed successfully");
-      } catch {
-        this._taskArray = [];
-        log("[constructor] Array is assigned empty");
+      } catch (error) {
+        log.error(
+          "[constructor] Error occured when parsing local storage",
+          error
+        );
       }
+    } else {
+      this._taskArray = [];
+      log("[constructor] Array is assigned empty");
     }
-  }
-
-  // Method to give the list to updateChecked to satisfy private methods
-  setList(nextList) {
-    this._taskArray = Array.isArray(nextList) ? nextList : [];
-
-    this._persistTasks();
-
-    return this.getList();
   }
 
   //Save the current task array to localStorage
   //Used after every operation that modifies _taskArray
   _persistTasks() {
-    const updateStorage = this._taskArray.map((task) => {
-      const { checked: _checked, ...rest } = task;
-      return rest;
-    });
-    const stringifiedValue = JSON.stringify(updateStorage);
+    const stringifiedValue = JSON.stringify(this._taskArray);
     localStorage.setItem("taskArray", stringifiedValue);
     log("[_persistTasks] Persisted localStorage");
   }
@@ -87,6 +66,18 @@ export default class TaskListManager {
     return [...this._taskArray];
   }
 
+  findIndex(taskId) {
+    const index = this._taskArray.findIndex((task) => task.id === taskId);
+
+    if (index === -1) {
+      log("[updateChecked] task index not found: ", taskId);
+
+      return -1;
+    }
+
+    return index;
+  }
+
   //Add a new task to the list
   addTask(taskText) {
     //if taskText is null/undefined, have a fallback
@@ -99,10 +90,10 @@ export default class TaskListManager {
     }
 
     const newTask = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       title: trimTaskText,
       completed: false,
-      date: Date.now().toString(),
+      date: new Date().toISOString(),
     };
 
     //append new task and persist
@@ -116,7 +107,15 @@ export default class TaskListManager {
 
   //Deletes the task
   deleteTask(taskId) {
-    this._taskArray = this._taskArray.filter((task) => task.id !== taskId);
+    const index = this.findIndex(taskId);
+
+    if (index === -1) {
+      log.error("[deleteTask] index of task not found: ", taskId);
+      //return the list either way, so the UI doesn't break
+      return this.getList();
+    }
+
+    this._taskArray.splice(index, 1);
 
     this._persistTasks();
 
@@ -128,7 +127,13 @@ export default class TaskListManager {
   //find + boolean function*
   //Marks a specific task completed/uncompleted
   updateCompleted(taskId, isCompleted) {
-    const index = this._taskArray.findIndex((task) => task.id === taskId);
+    const index = this.findIndex(taskId);
+
+    if (index === -1) {
+      log.error("[deleteTask] index of task not found: ", taskId);
+      //return the list either way, so the UI doesn't break
+      return this.getList();
+    }
 
     this._taskArray[index].completed = isCompleted;
 
@@ -141,41 +146,44 @@ export default class TaskListManager {
 
   //Marks all the checked tasks as completed
   //Logs the number of completed tasks by counting them before modifing the array
-  completeSelected() {
+  completeTasks(taskIds) {
     //completeTasks(taskIds)
     //give the manager a list of tasks to be completed (a list of tasks or a list of task ids)
-    const selectedTasks = this._taskArray.filter((task) => task.checked);
-    const checkedTasksCount = selectedTasks.length;
+    console.log("[completeTasks] incoming:", taskIds, Array.isArray(taskIds));
+    let idSet = new Set(taskIds);
+    console.log("here");
+    let completedCount = 0;
 
-    this._taskArray = this._taskArray.map((task) =>
-      task.checked ? { ...task, completed: true } : task
-    );
+    this._taskArray = this._taskArray.map((task) => {
+      if (idSet.has(task.id)) {
+        completedCount++;
+        return { ...task, completed: true };
+      }
+      return task;
+    });
 
     this._persistTasks();
 
-    selectedTasks.forEach((task) =>
-      log("[completeSelected] Completed tasks: ", task.id)
-    );
-    log("[completeSelected] Completed tasks: ", checkedTasksCount);
+    taskIds.forEach((id) => log("[completeSelected] Completed tasks: ", id));
+    log("[completeSelected] Completed tasks: ", completedCount);
 
     return this.getList();
   }
 
   //Deletes all checked tasks
   //Logs how many tasks were removed
-  deleteSelected() {
-    //Retain deleted in ana array for log
-    const deletedTasks = this._taskArray.filter((task) => task.checked);
-    const deletedTasksCount = deletedTasks.length; //Determine how many tasks will be deleted
+  deleteTasks(taskIds) {
+    let idSet = new Set(taskIds);
 
-    this._taskArray = this._taskArray.filter((task) => !task.checked);
+    const deletedTasks = this._taskArray.filter((task) => idSet.has(task.id));
+    this._taskArray = this._taskArray.filter((task) => !idSet.has(task.id));
+
+    const deletedCount = deletedTasks.length;
 
     this._persistTasks();
 
-    deletedTasks.forEach((task) =>
-      log("[deleteSelected] Task deleted: ", task.id)
-    );
-    log("[deleteSelected] Deleted count: ", deletedTasksCount);
+    taskIds.forEach((id) => log("[deleteSelected] Task deleted: ", id));
+    log("[deleteSelected] Deleted count: ", deletedCount);
 
     return this.getList();
   }

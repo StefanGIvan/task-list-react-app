@@ -24,7 +24,7 @@ const log = Logger("[TaskList]", true);
 export default function TaskList() {
   //UI state - hold the current list and text input
   //the data lives in the manager
-  const [selectedTaskArray, setSelectedTaskArray] = useState([]);
+  const [selectedTaskArray, setSelectedTaskArray] = useState([]); //checked state array with ids
   const [taskArray, setTaskArray] = useState(manager.getList());
   const [taskText, setTaskText] = useState("");
 
@@ -45,36 +45,30 @@ export default function TaskList() {
     setTaskText("");
   }
 
+  //function that verifies if checked id is in the array
+  function isChecked(taskId) {
+    return selectedTaskArray.includes(taskId);
+  }
+
   // Handles checking/unchecking a task (from TaskItem)
   // Toggle the checked state of a specific task
-  function updateChecked(taskId, isChecked) {
+  // Function that modifies the id
+  function updateChecked(taskId) {
     //move functions from manager to tasklist; can stay in manager but can take a parameter(setSelectedTaskArray)
     //remove logic of check from manager
     //check just here where we have the array
 
     //take the array and update the checked property
     setSelectedTaskArray((previousTasks) => {
-      const index = findIndexTask(previousTasks, taskId);
+      if (isChecked(taskId)) {
+        log("[updateChecked] Toggle unchecked: ", taskId);
 
-      //for re-rendering
-      let newArray = [...previousTasks];
-      newArray[index] = { ...newArray[index], checked: isChecked };
-      return newArray;
+        return previousTasks.filter((id) => id !== taskId);
+      }
+      log("[updateChecked] Toggled checked: ", taskId);
+
+      return [...previousTasks, taskId];
     });
-
-    log("[updateChecked] Toggled checked: ", taskId, " Value: ", isChecked);
-  }
-
-  function findIndexTask(taskArray, taskId) {
-    const index = taskArray.findIndex((task) => task.id === taskId);
-
-    if (index === -1) {
-      log("[updateChecked] task index not found: ", taskId);
-
-      return false;
-    }
-
-    return index;
   }
 
   // Deletes a task only if it's checked (from TaskItem)
@@ -90,12 +84,12 @@ export default function TaskList() {
 
   // Mark all checked tasks as completed (from HeaderActions)
   function completeSelected() {
-    setTaskArray(manager.completeSelected());
+    setTaskArray(manager.completeTasks(selectedTaskArray));
   }
 
   // Delete all tasks that are checked (from HeaderActions)
   function deleteSelected() {
-    setTaskArray(manager.deleteSelected());
+    setTaskArray(manager.deleteTasks(selectedTaskArray));
   }
 
   //UI Rendering
