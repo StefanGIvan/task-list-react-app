@@ -53,22 +53,22 @@ export default function TaskList() {
   // Handles checking/unchecking a task (from TaskItem)
   // Toggle the checked state of a specific task
   // Function that modifies the id
-  function updateChecked(taskId) {
+  function toggleChecked(taskId) {
     //move functions from manager to tasklist; can stay in manager but can take a parameter(setSelectedTaskArray)
     //remove logic of check from manager
     //check just here where we have the array
 
     //take the array and update the checked property
-    setSelectedTaskArray((previousTasks) => {
-      if (isChecked(taskId)) {
-        log("[updateChecked] Toggle unchecked: ", taskId);
+    if (isChecked(taskId)) {
+      log("[toggleChecked] Toggle unchecked: ", taskId);
 
-        return previousTasks.filter((id) => id !== taskId);
-      }
-      log("[updateChecked] Toggled checked: ", taskId);
+      setSelectedTaskArray(selectedTaskArray.filter((id) => id !== taskId));
+      return;
+    }
+    log("[toggleChecked] Toggled checked: ", taskId);
 
-      return [...previousTasks, taskId];
-    });
+    // return [...previousTasks, taskId];
+    setSelectedTaskArray([...selectedTaskArray, taskId]);
   }
 
   // Deletes a task only if it's checked (from TaskItem)
@@ -138,7 +138,7 @@ export default function TaskList() {
                 key={task.id}
                 task={task}
                 onDelete={deleteTask}
-                onUpdateChecked={updateChecked}
+                onUpdateChecked={toggleChecked}
                 onToggleCompleted={updateCompleted}
               />
             ))}
