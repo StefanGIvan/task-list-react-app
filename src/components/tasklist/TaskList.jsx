@@ -95,7 +95,7 @@ export default function TaskList() {
   //UI Rendering
   return (
     <div className="tasklist-container">
-      <section className="tasklist-card tasklist-form-card">
+      <section className="card tasklist-form">
         <h2 className="tasklist-title">To Do List</h2>
 
         {/*Tasklist form*/}
@@ -114,13 +114,13 @@ export default function TaskList() {
 
       {/*Render HeaderActions between Tasklist form and Tasklist items*/}
       <HeaderActions
-        selectedCount={manager.selectedCount()}
-        totalCount={manager.totalCount()}
+        selectedCount={selectedTaskArray.length}
+        totalCount={taskArray.length}
         onCompleteSelected={completeSelected}
         onDeleteSelected={deleteSelected}
       />
 
-      <section className="tasklist-card tasklist-items-card">
+      <section className="card">
         {/*If taskArray length is zero, show EmptyState card, else show the TaskItem*/}
         {taskArray.length === 0 ? (
           <EmptyState />

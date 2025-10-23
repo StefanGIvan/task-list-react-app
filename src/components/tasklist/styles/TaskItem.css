@@ -13,6 +13,7 @@
 }
 
 .task-title {
+  font-size: 18px;
   flex: 1 1 auto;
   min-width: 0;
 }
@@ -23,16 +24,6 @@
   flex: 0 0 auto;
   white-space: nowrap;
   margin-left: auto;
-}
-
-.task-complete-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.task-delete-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .task-item.completed .task-title {
@@ -53,6 +44,7 @@
 .task-complete-btn:hover {
   background-color: var(--blue);
   box-shadow: 0 0 4px 8px var(--blue);
+  transition: all 0.2s ease;
 }
 
 .complete-icon {
@@ -75,12 +67,13 @@
   padding: 6px;
 }
 
-.delete-icon {
-  width: 25px;
-  height: 25px;
-}
-
 .task-delete-btn:hover {
   background-color: var(--blue);
   box-shadow: 0 0 4px 8px var(--blue);
+  transition: all 0.2s ease;
+}
+
+.delete-icon {
+  width: 25px;
+  height: 25px;
 }

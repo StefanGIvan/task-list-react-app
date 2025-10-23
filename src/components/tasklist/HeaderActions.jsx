@@ -14,7 +14,7 @@ export default function HeaderActions({
   const nothingSelected = selectedCount === 0;
 
   return (
-    <section className="tasklist-card tasklist-actions-card">
+    <section className="card tasklist-actions">
       <div className="header-actions">
         <span className="header-info">
           Selected: {selectedCount}/{totalCount}

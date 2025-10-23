@@ -1,7 +1,18 @@
-.tasklist-actions-card {
+.tasklist-actions {
   box-sizing: border-box;
   margin: 20px 0;
   width: 100%;
+}
+
+.card {
+  background: var(--mediumGray);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px var(--white);
+}
+
+.header-info {
+  font-size: 18px;
 }
 
 .header-actions {
@@ -33,6 +44,12 @@
 .bulk-complete-button:hover {
   background-color: var(--blue);
   box-shadow: 0 0 4px 8px var(--blue);
+  transition: all 0.2s ease;
+}
+
+.bulk-complete-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .bulk-delete-button {
@@ -45,12 +62,18 @@
   padding: 6px;
 }
 
-.bulk-delete-icon {
-  width: 25px;
-  height: 25px;
-}
-
 .bulk-delete-button:hover {
   background-color: var(--blue);
   box-shadow: 0 0 4px 8px var(--blue);
+  transition: all 0.2s ease;
+}
+
+.bulk-delete-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.bulk-delete-icon {
+  width: 25px;
+  height: 25px;
 }

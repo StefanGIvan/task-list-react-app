@@ -4,47 +4,63 @@
   padding: 0 16px;
 }
 
-.tasklist-card {
+.card {
   background: var(--mediumGray);
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 2px 8px var(--white);
 }
 
-.tasklist-form-card {
-  margin-bottom: 16px;
-}
-
 .tasklist-title {
-  font-size: 25px;
+  text-align: center;
+  font-size: 30px;
   font-weight: 600;
-  margin-bottom: 15px;
+  margin-top: 0px;
+  margin-bottom: 25px;
   color: var(--white);
 }
 
 .tasklist-form {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-items: stretch;
   gap: 8px;
+  margin-bottom: 16px;
 }
 
 .tasklist-input {
   flex: 1 1 auto;
   padding: 6px 10px;
+  width: 50%;
+  font-size: 18px;
   border: 1px solid var(--black);
   border-radius: 3px;
+  margin: auto;
+}
+
+.tasklist-input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: inset 0 0 6px rgba(0, 123, 255, 0.7);
 }
 
 .tasklist-button {
-  padding: 6px 12px;
+  margin: auto;
+  width: 30%;
+  padding: 10px 10px;
+  font-size: 18px;
   background-color: var(--gray);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
   color: var(--white);
   border: none;
-  border-radius: 3px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 .tasklist-button:hover {
   background-color: var(--blue);
+  transition: all 0.2s ease;
 }
 
 .tasklist-items-container {
