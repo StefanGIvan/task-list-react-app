@@ -74,7 +74,10 @@ export default function TaskList() {
   // Deletes a task only if it's checked (from TaskItem)
   function deleteTask(taskId) {
     setTaskArray(manager.deleteTask(taskId));
-    //logs
+
+    setSelectedTaskArray((previousTasks) =>
+      previousTasks.filter((id) => id !== taskId)
+    );
   }
 
   // Mark a task as completed/uncompleted, if it's checked (from TaskItem)
@@ -90,6 +93,10 @@ export default function TaskList() {
   // Delete all tasks that are checked (from HeaderActions)
   function deleteSelected() {
     setTaskArray(manager.deleteTasks(selectedTaskArray));
+
+    setSelectedTaskArray((previousTasks) =>
+      previousTasks.filter((id) => !selectedTaskArray.includes(id))
+    );
   }
 
   //UI Rendering
