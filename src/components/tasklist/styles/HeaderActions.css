@@ -1,14 +1,5 @@
 .tasklist-actions {
-  box-sizing: border-box;
   margin: 20px 0;
-  width: 100%;
-}
-
-.card {
-  background: var(--mediumGray);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 8px var(--white);
 }
 
 .header-info {

@@ -102,7 +102,7 @@ export default function TaskList() {
   //UI Rendering
   return (
     <div className="tasklist-container">
-      <section className="card tasklist-form">
+      <section className="card tasklist-form-section">
         <h2 className="tasklist-title">To Do List</h2>
 
         {/*Tasklist form*/}
