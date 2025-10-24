@@ -15,6 +15,8 @@ import Logger from "../../lib/logger.js";
 
 import "./styles/TaskList.css";
 
+import { toast } from "react-hot-toast";
+
 //get the global singleton instance
 //should not init at the start of the app if we have other code not needed to render from the start*
 const manager = TaskListManager.getInstance();
@@ -41,6 +43,12 @@ export default function TaskList() {
     event.preventDefault();
 
     setTaskArray(manager.addTask(taskText));
+
+    if (taskText) {
+      toast.success("Task added successfully!");
+    } else {
+      toast.error("Please enter a task before adding");
+    }
 
     setTaskText("");
   }
@@ -75,28 +83,49 @@ export default function TaskList() {
   function deleteTask(taskId) {
     setTaskArray(manager.deleteTask(taskId));
 
-    setSelectedTaskArray((previousTasks) =>
-      previousTasks.filter((id) => id !== taskId)
+    //remove id for checked from the array
+    const updateSelectedTaskArray = selectedTaskArray.filter(
+      (id) => id !== taskId
     );
+    setSelectedTaskArray(updateSelectedTaskArray);
+
+    toast.success("Task deleted");
   }
 
   // Mark a task as completed/uncompleted, if it's checked (from TaskItem)
-  function updateCompleted(taskId, isCompleted) {
-    setTaskArray(manager.updateCompleted(taskId, isCompleted));
+  function toggleCompleted(taskId, isCompleted) {
+    setTaskArray(manager.toggleCompleted(taskId, isCompleted));
+
+    const updateSelectedTaskArray = selectedTaskArray.filter(
+      (id) => id !== taskId
+    );
+    setSelectedTaskArray(updateSelectedTaskArray);
+
+    if (isCompleted) {
+      toast.success("Task completed!");
+    } else {
+      toast.success("Task uncompleted!");
+    }
   }
 
   // Mark all checked tasks as completed (from HeaderActions)
   function completeSelected() {
     setTaskArray(manager.completeTasks(selectedTaskArray));
+
+    //remove every id from the array
+    setSelectedTaskArray([]);
+
+    toast.success("Tasks completed!");
   }
 
   // Delete all tasks that are checked (from HeaderActions)
   function deleteSelected() {
     setTaskArray(manager.deleteTasks(selectedTaskArray));
 
-    setSelectedTaskArray((previousTasks) =>
-      previousTasks.filter((id) => !selectedTaskArray.includes(id))
-    );
+    //remove every id from the array
+    setSelectedTaskArray([]);
+
+    toast.success("Tasks deleted!");
   }
 
   //UI Rendering
@@ -133,13 +162,15 @@ export default function TaskList() {
           <EmptyState />
         ) : (
           <ul className="tasklist-items-container">
+            {/*isChecked used to just update the UI checkbox*/}
             {taskArray.map((task) => (
               <TaskItem
                 key={task.id}
                 task={task}
+                isChecked={isChecked(task.id)}
                 onDelete={deleteTask}
                 onUpdateChecked={toggleChecked}
-                onToggleCompleted={updateCompleted}
+                onToggleCompleted={toggleCompleted}
               />
             ))}
           </ul>

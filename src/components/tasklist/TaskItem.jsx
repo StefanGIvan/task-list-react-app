@@ -13,14 +13,15 @@ import "./styles/TaskItem.css";
 
 export default function TaskItem({
   task,
+  isChecked,
   onDelete,
   onUpdateChecked,
   onToggleCompleted,
 }) {
   // Functions that update the UI
-  const handleChecked = (event) => {
+  const handleChecked = () => {
     if (onUpdateChecked) {
-      onUpdateChecked(task.id, event.target.checked);
+      onUpdateChecked(task.id);
     }
   };
 
@@ -41,7 +42,7 @@ export default function TaskItem({
       <input
         type="checkbox"
         className="task-checkbox"
-        checked={task.checked}
+        checked={isChecked}
         onChange={handleChecked}
       />
 

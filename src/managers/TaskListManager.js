@@ -20,7 +20,7 @@ export default class TaskListManager {
     }
     return TaskListManager._instance;
   }
-
+  //different branches with different styles*
   //Private constructor
   constructor() {
     //Load persisted tasks from localStorage/else create an array
@@ -49,16 +49,6 @@ export default class TaskListManager {
     const stringifiedValue = JSON.stringify(this._taskArray);
     localStorage.setItem("taskArray", stringifiedValue);
     log("[_persistTasks] Persisted localStorage");
-  }
-
-  //Returns the number of tasks that are currently checked
-  selectedCount() {
-    return this._taskArray.filter((task) => task.checked).length;
-  }
-
-  //Returns the total number of tasks stored
-  totalCount() {
-    return this._taskArray.length;
   }
 
   //Return the copy of the array/ return directly the task array
@@ -126,7 +116,7 @@ export default class TaskListManager {
 
   //find + boolean function*
   //Marks a specific task completed/uncompleted
-  updateCompleted(taskId, isCompleted) {
+  toggleCompleted(taskId, isCompleted) {
     const index = this.findIndex(taskId);
 
     if (index === -1) {
@@ -151,9 +141,9 @@ export default class TaskListManager {
     //give the manager a list of tasks to be completed (a list of tasks or a list of task ids)
     console.log("[completeTasks] incoming:", taskIds, Array.isArray(taskIds));
     let idSet = new Set(taskIds);
-    console.log("here");
     let completedCount = 0;
 
+    //Set doesn't contain duplicates and .has() is faster than .includes() for large data
     this._taskArray = this._taskArray.map((task) => {
       if (idSet.has(task.id)) {
         completedCount++;
@@ -175,6 +165,7 @@ export default class TaskListManager {
   deleteTasks(taskIds) {
     let idSet = new Set(taskIds);
 
+    //Set doesn't contain duplicates and .has() is faster than .includes() for large data
     const deletedTasks = this._taskArray.filter((task) => idSet.has(task.id));
     this._taskArray = this._taskArray.filter((task) => !idSet.has(task.id));
 
