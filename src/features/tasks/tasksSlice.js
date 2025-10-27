@@ -1,6 +1,5 @@
 // State is actually a Proxy from Immer.js
-// Action needed when reducer uses data sent from a component (not state) 
-// action - object
+// Action (object) - needed when reducer uses data sent from a component (not state)
 // action.payload - data dispatch sends
 
 import { createSlice } from "@reduxjs/toolkit";
@@ -10,7 +9,7 @@ import Logger from "../../lib/logger";
 //constant that stores the string key used in localStorage
 const LS_KEY = "taskArray";
 
-const log = logger("[TaskList]", true);
+const log = Logger;
 
 // Get from localStorage
 function loadLocalStorage() {
@@ -23,19 +22,14 @@ function loadLocalStorage() {
 
     const parsedStorage = JSON.parse(storedValue);
 
-    //for every element, make sure checked is false after refresh
-    return parsedStorage.map((task) => ({ ...task, checked: false }));
+    //check is parsed value is an array(case for when the parsed value exists)
+    return Array.isArray(parsedStorage) ? parsedStorage : [];
   } catch (error) {
     log.error("Error occured in loading localStorage: ", error);
 
+    //return empty array if the parsed value doesn't exist/any other error
     return [];
   }
-}
-
-// Update localStorage
-function persistTasks(taskArray) {
-  const cleanTasks = taskArray.map(({ checked, ...rest }) => rest);
-  localStorage.setItem("taskArray", JSON.stringify(cleanTasks));
 }
 
 // Array starting point
@@ -47,6 +41,9 @@ const TaskListSlice = createSlice({
   initialState,
   reducers: {
     addTask: {
+      //HOOK: preprocess the title before it hits the reducer
+      //constructing payload
+      //what object prepare returns becomes the action
       prepare(title) {
         const trimText = (title ?? "").trim();
         return { payload: trimText };
@@ -55,33 +52,17 @@ const TaskListSlice = createSlice({
         const title = action.payload;
 
         if (!title) {
-          return;
+          //just return the unchanged state
+          return state;
         }
 
-        state.push({
-          id: Date.now().toString(),
+        const newTask = {
+          id: crypto.randomUUID(),
           title,
-          checked: false,
           completed: false,
-        });
-      },
-    },
-
-    // Case for deleting a task
-    deleteTask(state, action) {
-      const taskId = action.payload;
-      return state.filter((task) => task.id !== taskId);
-    },
-
-    // Check/Uncheck a task
-    updateChecked(state, action) {
-      //payload
-      const { taskId, isChecked } = action.payload;
-
-      const findTask = state.find((task) => task.id === taskId);
-
-      if (findTask) {
-        findTask.checked = isChecked;
+          date: new Date().toISOString(),
+        };
+        return [...state, newTask];
       },
     },
 
@@ -90,32 +71,33 @@ const TaskListSlice = createSlice({
       //payload
       const { taskId, isCompleted } = action.payload;
 
-      const findTask = state.find((task) => task.id === taskId);
+      return state.map((task) =>
+        task.id === taskId ? { ...task, completed: isCompleted } : task
+      );
+    },
 
-      if(findTask) {
-        findTask.completed = isCompleted;
-      }
+    // Case for deleting a task
+    deleteTask(state, action) {
+      const taskId = action.payload;
+      return state.filter((task) => task.id !== taskId);
     },
 
     // Complete/Uncomplete selected
-    completeSelected(state) {
-      return state.forEach((task) => {
-        if(task.checked) {
-          task.completed = true;
-        }
-      });
+    completeSelected(state, action) {
+      const taskIds = new Set(action.payload);
+
+      return state.map((task) =>
+        taskIds.has(task.id) ? { ...task, completed: true } : task
+      );
     },
 
     // Not mutating the original array, creates a brand new array so need to return
     // We only return something if we are replacing the entire array
     // Delete selected
-    deleteSelected(state) {
-      return state.filter((task) => !task.checked);
-    },
+    deleteSelected(state, action) {
+      const taskIds = new Set(action.payload);
 
-    // Uncheck inputs
-    clearChecks(state) {
-      state.forEach((task) => {task.checked = false});
+      return state.filter((task) => !taskIds.has(task.id));
     },
   },
 });
@@ -123,19 +105,10 @@ const TaskListSlice = createSlice({
 // Extract & export all the actions creators (dispatch actions)
 export const {
   addTask,
-  updateChecked,
-  deleteTask,
   updateCompleted,
+  deleteTask,
   completeSelected,
   deleteSelected,
-  clearChecks,
 } = TaskListSlice.actions;
 
-
-// Read specific data from Redux store (instead of manually drilling state)
-export const selectTasks = state => state.taskArray;
-export const selectTotalCount = state => state.taskArray.length;
-export const selectedCount = state => state.taskArray.filter((task) => task.checked).length;
-
 export default TaskListSlice.reducer;
-
