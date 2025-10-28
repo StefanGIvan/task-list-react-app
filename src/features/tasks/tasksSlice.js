@@ -4,36 +4,8 @@
 
 import { createSlice } from "@reduxjs/toolkit";
 
-import Logger from "../../lib/logger";
-
-//constant that stores the string key used in localStorage
-const LS_KEY = "taskArray";
-
-const log = Logger;
-
-// Get from localStorage
-function loadLocalStorage() {
-  try {
-    const storedValue = localStorage.getItem(LS_KEY);
-
-    if (!storedValue) {
-      return [];
-    }
-
-    const parsedStorage = JSON.parse(storedValue);
-
-    //check is parsed value is an array(case for when the parsed value exists)
-    return Array.isArray(parsedStorage) ? parsedStorage : [];
-  } catch (error) {
-    log.error("Error occured in loading localStorage: ", error);
-
-    //return empty array if the parsed value doesn't exist/any other error
-    return [];
-  }
-}
-
-// Array starting point
-const initialState = loadLocalStorage();
+//store will override this with persisted data on load
+const initialState = [];
 
 // Defining where the data lives and how the data can be changed
 const TaskListSlice = createSlice({
@@ -67,7 +39,8 @@ const TaskListSlice = createSlice({
     },
 
     // Complete/Uncomplete a task
-    updateCompleted(state, action) {
+    // State is not mutated - map creates a new array and returns
+    toggleCompleted(state, action) {
       //payload
       const { taskId, isCompleted } = action.payload;
 
@@ -105,7 +78,7 @@ const TaskListSlice = createSlice({
 // Extract & export all the actions creators (dispatch actions)
 export const {
   addTask,
-  updateCompleted,
+  toggleCompleted,
   deleteTask,
   completeSelected,
   deleteSelected,

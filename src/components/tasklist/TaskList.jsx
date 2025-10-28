@@ -1,7 +1,17 @@
 // UI component responsible for rendering and updating the task list
 // Delegates state management and data persistance to TaskListManager (Singleton)
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+
+import { useSelector, useDispatch } from "react-redux";
+
+import {
+  addTask as addTaskAction,
+  deleteTask as deleteTaskAction,
+  toggleCompleted as toggleCompletedAction,
+  completeSelected as completeSelectedAction,
+  deleteSelected as deleteSelectedAction,
+} from "../../features/tasks/tasksSlice.js";
 
 import TaskItem from "./TaskItem";
 
@@ -9,17 +19,11 @@ import HeaderActions from "./HeaderActions";
 
 import EmptyState from "./EmptyState";
 
-import TaskListManager from "../../managers/TaskListManager.js";
-
 import Logger from "../../lib/logger.js";
 
 import "./styles/TaskList.css";
 
 import { toast } from "react-hot-toast";
-
-//get the global singleton instance
-//should not init at the start of the app if we have other code not needed to render from the start*
-const manager = TaskListManager.getInstance();
 
 const log = Logger("[TaskList]", true);
 
@@ -27,29 +31,23 @@ export default function TaskList() {
   //UI state - hold the current list and text input
   //the data lives in the manager
   const [selectedTaskArray, setSelectedTaskArray] = useState([]); //checked state array with ids
-  const [taskArray, setTaskArray] = useState(manager.getList());
   const [taskText, setTaskText] = useState("");
 
-  //On mount, sync the component data with the manager
-  //init dispatch function redux read localStorage*
-  useEffect(() => {
-    setTaskArray(manager.getList());
-
-    log("Mounted");
-  }, []);
+  const dispatch = useDispatch();
+  const taskArray = useSelector((state) => state.tasks);
 
   // Add new task
   function addTask(event) {
     event.preventDefault();
 
-    setTaskArray(manager.addTask(taskText));
+    //catch .trim before it enters Redux
+    if (taskText.trim()) {
+      dispatch(addTaskAction(taskText));
 
-    if (taskText) {
       toast.success("Task added successfully!");
     } else {
       toast.error("Please enter a task before adding");
     }
-
     setTaskText("");
   }
 
@@ -81,7 +79,7 @@ export default function TaskList() {
 
   // Deletes a task only if it's checked (from TaskItem)
   function deleteTask(taskId) {
-    setTaskArray(manager.deleteTask(taskId));
+    dispatch(deleteTaskAction(taskId));
 
     //remove id for checked from the array
     const updateSelectedTaskArray = selectedTaskArray.filter(
@@ -94,8 +92,9 @@ export default function TaskList() {
 
   // Mark a task as completed/uncompleted, if it's checked (from TaskItem)
   function toggleCompleted(taskId, isCompleted) {
-    setTaskArray(manager.toggleCompleted(taskId, isCompleted));
+    dispatch(toggleCompletedAction({ taskId, isCompleted }));
 
+    //remove id for checked from the array
     const updateSelectedTaskArray = selectedTaskArray.filter(
       (id) => id !== taskId
     );
@@ -110,7 +109,7 @@ export default function TaskList() {
 
   // Mark all checked tasks as completed (from HeaderActions)
   function completeSelected() {
-    setTaskArray(manager.completeTasks(selectedTaskArray));
+    dispatch(completeSelectedAction(selectedTaskArray));
 
     //remove every id from the array
     setSelectedTaskArray([]);
@@ -120,7 +119,7 @@ export default function TaskList() {
 
   // Delete all tasks that are checked (from HeaderActions)
   function deleteSelected() {
-    setTaskArray(manager.deleteTasks(selectedTaskArray));
+    dispatch(deleteSelectedAction(selectedTaskArray));
 
     //remove every id from the array
     setSelectedTaskArray([]);
