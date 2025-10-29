@@ -34,7 +34,11 @@ export default function TaskList() {
   const [taskText, setTaskText] = useState("");
 
   const dispatch = useDispatch();
+  //allow TaskList to access Redux data - return the array of tasks from store
   const taskArray = useSelector((state) => state.tasks);
+
+  const isAllChecked =
+    taskArray.length > 0 && selectedTaskArray.length === taskArray.length;
 
   // Add new task
   function addTask(event) {
@@ -75,6 +79,18 @@ export default function TaskList() {
 
     // return [...previousTasks, taskId];
     setSelectedTaskArray([...selectedTaskArray, taskId]);
+  }
+
+  function toggleCheckAll(isCheckAll) {
+    if (isCheckAll) {
+      setSelectedTaskArray(taskArray.map((task) => task.id));
+
+      log("All tasks checked");
+    } else {
+      setSelectedTaskArray([]);
+
+      log("All tasks unchecked");
+    }
   }
 
   // Deletes a task only if it's checked (from TaskItem)
@@ -149,10 +165,12 @@ export default function TaskList() {
 
       {/*Render HeaderActions between Tasklist form and Tasklist items*/}
       <HeaderActions
-        selectedCount={selectedTaskArray.length}
         totalCount={taskArray.length}
+        selectedCount={selectedTaskArray.length}
         onCompleteSelected={completeSelected}
         onDeleteSelected={deleteSelected}
+        onToggleSelectAll={toggleCheckAll}
+        isAllChecked={isAllChecked}
       />
 
       <section className="card">

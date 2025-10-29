@@ -10,22 +10,32 @@ export default function HeaderActions({
   selectedCount,
   onCompleteSelected,
   onDeleteSelected,
+  onToggleSelectAll,
+  isAllChecked,
 }) {
-  const nothingSelected = selectedCount === 0;
-
   return (
     <section className="card tasklist-actions">
       <div className="header-actions">
-        <span className="header-info">
-          Selected: {selectedCount}/{totalCount}
-        </span>
+        {/*label for select all checkbox*/}
+        <label>
+          <input
+            type="checkbox"
+            class="header-checkbox"
+            disabled={totalCount === 0}
+            checked={isAllChecked}
+            onChange={(event) => onToggleSelectAll(event.target.checked)}
+          />
+          <span className="header-info">
+            Selected: {selectedCount}/{totalCount}
+          </span>
+        </label>
 
         <div className="header-buttons">
           {/*Bulk Complete Button*/}
           <button
             type="button"
             className="bulk-complete-button"
-            disabled={nothingSelected}
+            disabled={totalCount === 0}
             onClick={onCompleteSelected}
           >
             <BulkCompleteIcon className="bulk-complete-icon" />
@@ -35,7 +45,7 @@ export default function HeaderActions({
           <button
             type="button"
             className="bulk-delete-button"
-            disabled={nothingSelected}
+            disabled={totalCount === 0}
             onClick={onDeleteSelected}
           >
             <BulkDeleteIcon className="bulk-delete-icon" />
