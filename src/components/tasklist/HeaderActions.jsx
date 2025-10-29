@@ -35,7 +35,7 @@ export default function HeaderActions({
           <button
             type="button"
             className="bulk-complete-button"
-            disabled={totalCount === 0}
+            disabled={selectedCount === 0}
             onClick={onCompleteSelected}
           >
             <BulkCompleteIcon className="bulk-complete-icon" />
@@ -45,7 +45,7 @@ export default function HeaderActions({
           <button
             type="button"
             className="bulk-delete-button"
-            disabled={totalCount === 0}
+            disabled={selectedCount === 0}
             onClick={onDeleteSelected}
           >
             <BulkDeleteIcon className="bulk-delete-icon" />
