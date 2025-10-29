@@ -17,10 +17,10 @@ export default function HeaderActions({
     <section className="card tasklist-actions">
       <div className="header-actions">
         {/*label for select all checkbox*/}
-        <label>
+        <label className="header-actions-label">
           <input
             type="checkbox"
-            class="header-checkbox"
+            className="header-checkbox"
             disabled={totalCount === 0}
             checked={isAllChecked}
             onChange={(event) => onToggleSelectAll(event.target.checked)}
