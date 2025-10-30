@@ -37,6 +37,20 @@ export default function TaskItem({
     }
   };
 
+  // Function that verifies what priority a task has and shows a label for the UI
+  function getPriorityLabel(priority) {
+    switch (priority) {
+      case 1:
+        return "Low";
+      case 2:
+        return "Medium";
+      case 3:
+        return "High";
+      default:
+        return "None";
+    }
+  }
+
   return (
     <li className={"task-item" + (task.completed ? " completed" : "")}>
       <input
@@ -48,6 +62,8 @@ export default function TaskItem({
 
       <span className="task-title">{task.title}</span>
       {task.completed && <span className="task-label">Done</span>}
+
+      <span className="task-priority">{getPriorityLabel(task.priority)}</span>
 
       <div className="task-actions">
         <button

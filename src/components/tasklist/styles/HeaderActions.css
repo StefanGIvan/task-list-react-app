@@ -7,6 +7,14 @@
   padding-left: 10px;
 }
 
+.header-select {
+  padding: 6px 10px;
+  font-size: 15px;
+  border: 1px solid var(--black);
+  border-radius: 3px;
+  margin: auto;
+}
+
 .header-actions {
   display: flex;
   align-items: center;

@@ -12,6 +12,8 @@ export default function HeaderActions({
   onDeleteSelected,
   onToggleSelectAll,
   isAllChecked,
+  sortMode, //current sorting method
+  onSortModeChange, //changed sorting method
 }) {
   return (
     <section className="card tasklist-actions">
@@ -29,6 +31,18 @@ export default function HeaderActions({
             Selected: {selectedCount}/{totalCount}
           </span>
         </label>
+
+        <select
+          className="header-select"
+          value={sortMode}
+          onChange={(event) => onSortModeChange(event.target.value)}
+        >
+          <option value="none">None</option>
+          <option value="date-asc">Date: New→Old</option>
+          <option value="date-desc">Date: Old→New</option>
+          <option value="priority-asc">Priority: Low→High</option>
+          <option value="priority-desc">Priority: HIgh→Low</option>
+        </select>
 
         <div className="header-buttons">
           {/*Bulk Complete Button*/}

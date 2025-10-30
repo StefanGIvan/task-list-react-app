@@ -32,6 +32,9 @@ export default function TaskList() {
   //the data lives in the manager
   const [selectedTaskArray, setSelectedTaskArray] = useState([]); //checked state array with ids
   const [taskText, setTaskText] = useState("");
+  const [sortMode, setSortMode] = useState("none");
+  //state for the priority value
+  const [taskPriority, setTaskPriority] = useState(0);
 
   const dispatch = useDispatch();
   //allow TaskList to access Redux data - return the array of tasks from store
@@ -46,29 +49,23 @@ export default function TaskList() {
 
     //catch .trim before it enters Redux
     if (taskText.trim()) {
-      dispatch(addTaskAction(taskText));
+      dispatch(addTaskAction({ title: taskText, priority: taskPriority }));
 
       toast.success("Task added successfully!");
     } else {
       toast.error("Please enter a task before adding");
     }
     setTaskText("");
+    setTaskPriority(0); //reset select
   }
 
-  //function that verifies if checked id is in the array
+  // Helper function that verifies if checked id is in the array
   function isChecked(taskId) {
     return selectedTaskArray.includes(taskId);
   }
 
   // Handles checking/unchecking a task (from TaskItem)
-  // Toggle the checked state of a specific task
-  // Function that modifies the id
   function toggleChecked(taskId) {
-    //move functions from manager to tasklist; can stay in manager but can take a parameter(setSelectedTaskArray)
-    //remove logic of check from manager
-    //check just here where we have the array
-
-    //take the array and update the checked property
     if (isChecked(taskId)) {
       log("[toggleChecked] Toggle unchecked: ", taskId);
 
@@ -81,6 +78,7 @@ export default function TaskList() {
     setSelectedTaskArray([...selectedTaskArray, taskId]);
   }
 
+  // Check/Uncheck all tasks
   function toggleCheckAll(isCheckAll) {
     if (isCheckAll) {
       setSelectedTaskArray(taskArray.map((task) => task.id));
@@ -90,6 +88,30 @@ export default function TaskList() {
       setSelectedTaskArray([]);
 
       log("All tasks unchecked");
+    }
+  }
+
+  const sortedTasks = sortTaskArray(taskArray, sortMode);
+
+  //preset = user selected mode
+  function sortTaskArray(taskArray, preset) {
+    const copyTasksArray = [...taskArray]; //do not mutate Redux state in render code so we make a copy of the array
+
+    switch (preset) {
+      case "date-asc":
+        return copyTasksArray.sort(
+          (a, b) => Date.parse(a.date) - Date.parse(b.date)
+        );
+      case "date-desc":
+        return copyTasksArray.sort(
+          (a, b) => Date.parse(b.date) - Date.parse(a.date)
+        );
+      case "priority-asc":
+        return copyTasksArray.sort((a, b) => a.priority - b.priority);
+      case "priority-desc":
+        return copyTasksArray.sort((a, b) => b.priority - a.priority);
+      default:
+        return copyTasksArray;
     }
   }
 
@@ -157,6 +179,16 @@ export default function TaskList() {
             onChange={(event) => setTaskText(event.target.value)}
             placeholder="Write a task..."
           />
+          <select
+            className="tasklist-priority"
+            value={taskPriority}
+            onChange={(event) => setTaskPriority(Number(event.target.value))}
+          >
+            <option value={0}>None</option>
+            <option value={1}>Low</option>
+            <option value={2}>Medium</option>
+            <option value={3}>High</option>
+          </select>
           <button className="tasklist-button" type="submit">
             Add
           </button>
@@ -171,6 +203,8 @@ export default function TaskList() {
         onDeleteSelected={deleteSelected}
         onToggleSelectAll={toggleCheckAll}
         isAllChecked={isAllChecked}
+        sortMode={sortMode}
+        onSortModeChange={setSortMode}
       />
 
       <section className="card">
@@ -180,7 +214,7 @@ export default function TaskList() {
         ) : (
           <ul className="tasklist-items-container">
             {/*isChecked used to just update the UI checkbox*/}
-            {taskArray.map((task) => (
+            {sortedTasks.map((task) => (
               <TaskItem
                 key={task.id}
                 task={task}

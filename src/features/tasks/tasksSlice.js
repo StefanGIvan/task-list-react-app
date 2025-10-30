@@ -16,12 +16,16 @@ const TaskListSlice = createSlice({
       //HOOK: preprocess the title before it hits the reducer
       //constructing payload
       //what object prepare returns becomes the action
-      prepare(title) {
-        const trimText = (title ?? "").trim();
-        return { payload: trimText };
+      prepare({ title, priority }) {
+        return {
+          payload: {
+            title: (title ?? "").trim(),
+            priority: priority ?? 0,
+          },
+        };
       },
       reducer(state, action) {
-        const title = action.payload;
+        const { title, priority } = action.payload;
 
         if (!title) {
           //just return the unchanged state
@@ -33,6 +37,7 @@ const TaskListSlice = createSlice({
           title,
           completed: false,
           date: new Date().toISOString(),
+          priority, //0=None, 1=Low, 2=Medium, 3=High
         };
         return [...state, newTask];
       },
