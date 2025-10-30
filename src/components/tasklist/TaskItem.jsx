@@ -60,12 +60,15 @@ export default function TaskItem({
         onChange={handleChecked}
       />
 
-      <span className="task-title">{task.title}</span>
-      {task.completed && <span className="task-label">Done</span>}
-
-      <span className="task-priority">{getPriorityLabel(task.priority)}</span>
+      <span className="task-title-wrapper">
+        <span className="task-title">{task.title}</span>
+        {task.completed && <span className="task-completed-emoji">🎉</span>}
+      </span>
 
       <div className="task-actions">
+        <span className="task-priority-text">
+          {getPriorityLabel(task.priority)}
+        </span>
         <button
           type="button"
           className="task-complete-btn"

@@ -55,7 +55,7 @@ export const store = configureStore({
     tasks: tasksReducer,
   },
   //store starts with saved tasks
-  preloadState: { tasks: loadLocalStorage() },
+  preloadedState: { tasks: loadLocalStorage() },
   //add middleware on listener
   middleware: (getDefault) => getDefault().concat(listener.middleware),
 });

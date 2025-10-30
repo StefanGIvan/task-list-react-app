@@ -14,6 +14,8 @@ export default function HeaderActions({
   isAllChecked,
   sortMode, //current sorting method
   onSortModeChange, //changed sorting method
+  filterMode, //current filter method
+  onFilterModeChange, //changed filter method
 }) {
   return (
     <section className="card tasklist-actions">
@@ -33,7 +35,7 @@ export default function HeaderActions({
         </label>
 
         <select
-          className="header-select"
+          className="header-select-sort"
           value={sortMode}
           onChange={(event) => onSortModeChange(event.target.value)}
         >
@@ -42,6 +44,17 @@ export default function HeaderActions({
           <option value="date-desc">Date: Old→New</option>
           <option value="priority-asc">Priority: Low→High</option>
           <option value="priority-desc">Priority: HIgh→Low</option>
+        </select>
+
+        <select
+          className="header-select-filter"
+          value={filterMode}
+          onChange={(event) => onFilterModeChange(event.target.value)}
+        >
+          <option value="0">All</option>
+          <option value="1">Low</option>
+          <option value="2">Medium</option>
+          <option value="3">High</option>
         </select>
 
         <div className="header-buttons">

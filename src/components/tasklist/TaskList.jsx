@@ -1,7 +1,7 @@
 // UI component responsible for rendering and updating the task list
 // Delegates state management and data persistance to TaskListManager (Singleton)
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useSelector, useDispatch } from "react-redux";
 
@@ -33,6 +33,7 @@ export default function TaskList() {
   const [selectedTaskArray, setSelectedTaskArray] = useState([]); //checked state array with ids
   const [taskText, setTaskText] = useState("");
   const [sortMode, setSortMode] = useState("none");
+  const [filterMode, setFilterMode] = useState("All");
   //state for the priority value
   const [taskPriority, setTaskPriority] = useState(0);
 
@@ -91,10 +92,8 @@ export default function TaskList() {
     }
   }
 
-  const sortedTasks = sortTaskArray(taskArray, sortMode);
-
   //preset = user selected mode
-  function sortTaskArray(taskArray, preset) {
+  function sortTasks(taskArray, preset) {
     const copyTasksArray = [...taskArray]; //do not mutate Redux state in render code so we make a copy of the array
 
     switch (preset) {
@@ -114,6 +113,22 @@ export default function TaskList() {
         return copyTasksArray;
     }
   }
+
+  function filterTasks(taskArray, filter) {
+    if (filter === "All") {
+      return taskArray;
+    }
+
+    const actualFilter = Number(filter);
+
+    return taskArray.filter((task) => task.priority === actualFilter);
+  }
+
+  // visibleTaskArray will be what is sorted on what is filtered
+  const visibleTaskArray = useMemo(() => {
+    const filteredTasksArray = filterTasks(taskArray, filterMode);
+    return sortTasks(filteredTasksArray, sortMode);
+  }, [taskArray, filterMode, sortMode]);
 
   // Deletes a task only if it's checked (from TaskItem)
   function deleteTask(taskId) {
@@ -180,7 +195,7 @@ export default function TaskList() {
             placeholder="Write a task..."
           />
           <select
-            className="tasklist-priority"
+            className="tasklist-select-priority"
             value={taskPriority}
             onChange={(event) => setTaskPriority(Number(event.target.value))}
           >
@@ -205,6 +220,8 @@ export default function TaskList() {
         isAllChecked={isAllChecked}
         sortMode={sortMode}
         onSortModeChange={setSortMode}
+        filterMode={filterMode}
+        onFilterModeChange={setFilterMode}
       />
 
       <section className="card">
@@ -214,7 +231,7 @@ export default function TaskList() {
         ) : (
           <ul className="tasklist-items-container">
             {/*isChecked used to just update the UI checkbox*/}
-            {sortedTasks.map((task) => (
+            {visibleTaskArray.map((task) => (
               <TaskItem
                 key={task.id}
                 task={task}
