@@ -49,7 +49,7 @@ listener.startListening({
     localStorage.setItem(LS_KEY, JSON.stringify(currentTasks));
   },
 });
-
+// redux - persistance*
 // configureStore - creates a single store instance
 // export to the slice
 export const store = configureStore({

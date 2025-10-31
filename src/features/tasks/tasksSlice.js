@@ -13,17 +13,6 @@ const TaskListSlice = createSlice({
   initialState,
   reducers: {
     addTask: {
-      //HOOK: preprocess the title before it hits the reducer
-      //constructing payload
-      //what object prepare returns becomes the action
-      prepare({ title, priority }) {
-        return {
-          payload: {
-            title: (title ?? "").trim(),
-            priority: priority ?? 0,
-          },
-        };
-      },
       reducer(state, action) {
         const { title, priority } = action.payload;
 
@@ -88,5 +77,8 @@ export const {
   completeSelected,
   deleteSelected,
 } = TaskListSlice.actions;
+
+//export the state from here
+export const selectTaskList = (state) => state.tasks;
 
 export default TaskListSlice.reducer;

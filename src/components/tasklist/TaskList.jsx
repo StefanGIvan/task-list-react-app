@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 
 import { useSelector, useDispatch } from "react-redux";
 
+import { selectTaskList } from "../../features/tasks/tasksSlice.js";
+
 import {
   addTask as addTaskAction,
   deleteTask as deleteTaskAction,
@@ -39,7 +41,8 @@ export default function TaskList() {
 
   const dispatch = useDispatch();
   //allow TaskList to access Redux data - return the array of tasks from store
-  const taskArray = useSelector((state) => state.tasks);
+  //exported from the store*
+  const taskArray = useSelector(selectTaskList);
 
   // visibleTaskArray will be what is sorted on what is filtered
   const visibleTaskArray = useMemo(() => {
@@ -56,8 +59,10 @@ export default function TaskList() {
     event.preventDefault();
 
     //catch .trim before it enters Redux
-    if (taskText.trim()) {
-      dispatch(addTaskAction({ title: taskText, priority: taskPriority }));
+    //taskText.trim()* - lost
+    const trimTaskText = taskText.trim();
+    if (trimTaskText) {
+      dispatch(addTaskAction({ title: trimTaskText, priority: taskPriority }));
 
       toast.success("Task added successfully!");
     } else {
