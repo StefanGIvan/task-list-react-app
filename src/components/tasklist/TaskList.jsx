@@ -41,8 +41,15 @@ export default function TaskList() {
   //allow TaskList to access Redux data - return the array of tasks from store
   const taskArray = useSelector((state) => state.tasks);
 
+  // visibleTaskArray will be what is sorted on what is filtered
+  const visibleTaskArray = useMemo(() => {
+    const filteredTasksArray = filterTasks(taskArray, filterMode);
+    return sortTasks(filteredTasksArray, sortMode);
+  }, [taskArray, filterMode, sortMode]);
+
   const isAllChecked =
-    taskArray.length > 0 && selectedTaskArray.length === taskArray.length;
+    taskArray.length > 0 &&
+    selectedTaskArray.length === visibleTaskArray.length;
 
   // Add new task
   function addTask(event) {
@@ -123,12 +130,6 @@ export default function TaskList() {
 
     return taskArray.filter((task) => task.priority === actualFilter);
   }
-
-  // visibleTaskArray will be what is sorted on what is filtered
-  const visibleTaskArray = useMemo(() => {
-    const filteredTasksArray = filterTasks(taskArray, filterMode);
-    return sortTasks(filteredTasksArray, sortMode);
-  }, [taskArray, filterMode, sortMode]);
 
   // Deletes a task only if it's checked (from TaskItem)
   function deleteTask(taskId) {

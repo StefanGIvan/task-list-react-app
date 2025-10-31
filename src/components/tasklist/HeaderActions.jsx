@@ -42,8 +42,8 @@ export default function HeaderActions({
           <option value="none">None</option>
           <option value="date-asc">Date: New→Old</option>
           <option value="date-desc">Date: Old→New</option>
-          <option value="priority-asc">Priority: Low→High</option>
-          <option value="priority-desc">Priority: HIgh→Low</option>
+          <option value="priority-asc">Priority: None→High</option>
+          <option value="priority-desc">Priority: High→None</option>
         </select>
 
         <select
