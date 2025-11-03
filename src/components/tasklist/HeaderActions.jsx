@@ -39,7 +39,7 @@ export default function HeaderActions({
           value={sortMode}
           onChange={(event) => onSortModeChange(event.target.value)}
         >
-          <option value="none">None</option>
+          <option value="none">No sorting</option>
           <option value="date-asc">Date: New→Old</option>
           <option value="date-desc">Date: Old→New</option>
           <option value="priority-asc">Priority: None→High</option>

@@ -35,13 +35,13 @@ export default function TaskList() {
   const [selectedTaskArray, setSelectedTaskArray] = useState([]); //checked state array with ids
   const [taskText, setTaskText] = useState("");
   const [sortMode, setSortMode] = useState("none");
-  const [filterMode, setFilterMode] = useState("All");
+  const [filterMode, setFilterMode] = useState("0");
   //state for the priority value
   const [taskPriority, setTaskPriority] = useState(0);
 
   const dispatch = useDispatch();
   //allow TaskList to access Redux data - return the array of tasks from store
-  //exported from the store*
+  //exported from the store
   const taskArray = useSelector(selectTaskList);
 
   // visibleTaskArray will be what is sorted on what is filtered
@@ -51,8 +51,13 @@ export default function TaskList() {
   }, [taskArray, filterMode, sortMode]);
 
   const isAllChecked =
-    taskArray.length > 0 &&
+    visibleTaskArray.length > 0 &&
     selectedTaskArray.length === visibleTaskArray.length;
+
+  // Array that holds tasks that are checked and visible in the same time (needed when using other filter and tasks were selected before)
+  const visibleIdsArray = visibleTaskArray.filter((task) =>
+    selectedTaskArray.includes(task.id)
+  );
 
   // Add new task
   function addTask(event) {
@@ -127,7 +132,7 @@ export default function TaskList() {
   }
 
   function filterTasks(taskArray, filter) {
-    if (filter === "All") {
+    if (filter === "0") {
       return taskArray;
     }
 
@@ -218,8 +223,8 @@ export default function TaskList() {
 
       {/*Render HeaderActions between Tasklist form and Tasklist items*/}
       <HeaderActions
-        totalCount={taskArray.length}
-        selectedCount={selectedTaskArray.length}
+        totalCount={visibleTaskArray.length}
+        selectedCount={visibleIdsArray.length}
         onCompleteSelected={completeSelected}
         onDeleteSelected={deleteSelected}
         onToggleSelectAll={toggleCheckAll}
@@ -254,7 +259,8 @@ export default function TaskList() {
       {/*Footer that shows tasks number*/}
       <footer className="tasklist-footer">
         <p>
-          {taskArray.length} {taskArray.length === 1 ? "task" : "tasks"} total
+          {visibleTaskArray.length}{" "}
+          {visibleTaskArray.length === 1 ? "task" : "tasks"} total
         </p>
       </footer>
     </div>
