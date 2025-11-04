@@ -66,6 +66,24 @@ const TaskListSlice = createSlice({
 
       return state.filter((task) => !taskIds.has(task.id));
     },
+
+    reorder(state, action) {
+      // sourceIndex - index where the dragged item used to be
+      // destIndex - where it should go
+      const { sourceIndex, destIndex } = action.payload;
+
+      // If no destination or same position: do nothing
+      if (destIndex == null || sourceIndex === destIndex) {
+        return;
+      }
+
+      // Remove item from source
+      const removed = state.splice(sourceIndex, 1);
+      const moved = removed[0];
+
+      // Insert at new position
+      state.splice(destIndex, 0, moved);
+    },
   },
 });
 
@@ -76,6 +94,7 @@ export const {
   deleteTask,
   completeSelected,
   deleteSelected,
+  reorder,
 } = TaskListSlice.actions;
 
 //export the state from here

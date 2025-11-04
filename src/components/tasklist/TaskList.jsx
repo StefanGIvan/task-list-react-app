@@ -15,6 +15,10 @@ import {
   deleteSelected as deleteSelectedAction,
 } from "../../features/tasks/tasksSlice.js";
 
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+
+import { reorder } from "../../features/tasks/tasksSlice.js";
+
 import TaskItem from "./TaskItem";
 
 import HeaderActions from "./HeaderActions";
@@ -191,6 +195,29 @@ export default function TaskList() {
     toast.success("Tasks deleted!");
   }
 
+  function handleDragEnd(result) {
+    // result comes from @hello-pangea/dnd - contains info about source and destination (both have index)
+    // UI check + Reducer check
+    const { source, destination } = result;
+
+    // if a user drags a task and drops it outside - return
+    if (!destination) {
+      return;
+    }
+
+    // do not reorder if sorting is active (confusing UX)
+    if (sortMode !== "none") {
+      return;
+    }
+
+    dispatch(
+      reorder({
+        sourceIndex: source.index,
+        destIndex: destination.index,
+      })
+    );
+  }
+
   //UI Rendering
   return (
     <div className="tasklist-container">
@@ -240,19 +267,45 @@ export default function TaskList() {
         {taskArray.length === 0 ? (
           <EmptyState />
         ) : (
-          <ul className="tasklist-items-container">
-            {/*isChecked used to just update the UI checkbox*/}
-            {visibleTaskArray.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                isChecked={isChecked(task.id)}
-                onDelete={deleteTask}
-                onUpdateChecked={toggleChecked}
-                onToggleCompleted={toggleCompleted}
-              />
-            ))}
-          </ul>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="task-list">
+              {(provided) => (
+                <ul
+                  className="tasklist-items-container"
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                >
+                  {/*isChecked used to just update the UI checkbox*/}
+                  {visibleTaskArray.map((task, index) => (
+                    <Draggable
+                      key={task.id}
+                      draggableId={task.id}
+                      index={index}
+                    >
+                      {(provided) => (
+                        <li
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          <TaskItem
+                            key={task.id}
+                            task={task}
+                            isChecked={isChecked(task.id)}
+                            onDelete={deleteTask}
+                            onUpdateChecked={toggleChecked}
+                            onToggleCompleted={toggleCompleted}
+                          />
+                        </li>
+                      )}
+                    </Draggable>
+                  ))}
+
+                  {provided.placeholder}
+                </ul>
+              )}
+            </Droppable>
+          </DragDropContext>
         )}
       </section>
 

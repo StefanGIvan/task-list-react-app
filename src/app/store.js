@@ -33,7 +33,7 @@ export const store = configureStore({
   middleware: (getDefault) =>
     getDefault({
       serializableCheck: {
-        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"], // allow this actions
       },
     }),
 });
