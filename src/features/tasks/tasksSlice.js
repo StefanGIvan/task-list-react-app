@@ -85,6 +85,16 @@ const TaskListSlice = createSlice({
       // Insert at new position
       state.splice(destIndex, 0, moved);
     },
+
+    taskTitleEdit(state, action) {
+      const { taskId, newTitle } = action.payload;
+
+      const findTask = state.find((task) => task.id === taskId);
+
+      if (findTask) {
+        findTask.title = newTitle;
+      }
+    },
   },
 });
 
@@ -96,6 +106,7 @@ export const {
   completeSelected,
   deleteSelected,
   reorder,
+  taskTitleEdit,
 } = TaskListSlice.actions;
 
 //export the state from here

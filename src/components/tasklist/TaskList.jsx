@@ -13,6 +13,7 @@ import {
   toggleCompleted as toggleCompletedAction,
   completeSelected as completeSelectedAction,
   deleteSelected as deleteSelectedAction,
+  taskTitleEdit as taskTitleEditAction,
 } from "../../features/tasks/tasksSlice.js";
 
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
@@ -209,6 +210,10 @@ export default function TaskList() {
     toast.success("Tasks deleted!");
   }
 
+  function taskTitleEdit(taskId, newTitle) {
+    dispatch(taskTitleEditAction({ taskId, newTitle }));
+  }
+
   function handleDragEnd(result) {
     // result comes from @hello-pangea/dnd - contains info about source and destination (both have index)
     // UI check + Reducer check
@@ -310,6 +315,7 @@ export default function TaskList() {
                           onDelete={deleteTask}
                           onUpdateChecked={toggleChecked}
                           onToggleCompleted={toggleCompleted}
+                          onTaskTitleEdit={taskTitleEdit}
                           dragHandleProps={
                             sortMode === "none" ? provided.dragHandleProps : {}
                           }

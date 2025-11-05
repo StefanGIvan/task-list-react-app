@@ -9,6 +9,8 @@ import DeleteIcon from "../../assets/icons/delete.svg?react";
 
 import UndoIcon from "../../assets/icons/undo.svg?react";
 
+import { useState } from "react";
+
 import "./styles/TaskItem.css";
 
 export default function TaskItem({
@@ -20,7 +22,37 @@ export default function TaskItem({
   dragProps,
   dragHandleProps,
   ref,
+  onTaskTitleEdit,
 }) {
+  //capture the new text
+  const [titleEditing, setTitleEditing] = useState(false);
+  const [newTitle, setNewTitle] = useState(task.title);
+
+  function startEditing() {
+    setTitleEditing(true);
+    setNewTitle(task.title);
+  }
+
+  function finishEditing() {
+    setTitleEditing(false);
+
+    const trimNewTitle = newTitle.trim();
+
+    if (trimNewTitle && trimNewTitle !== task.title) {
+      onTaskTitleEdit(task.id, trimNewTitle);
+    }
+  }
+
+  function handleKeydown(event) {
+    if (event.key === "Enter") {
+      finishEditing();
+    }
+
+    if (event.key === "Escape") {
+      setTitleEditing(false);
+    }
+  }
+
   // Functions that update the UI
   const handleChecked = () => {
     if (onUpdateChecked) {
@@ -69,8 +101,29 @@ export default function TaskItem({
       />
 
       <span className="task-title-wrapper">
-        <span className="task-title">{task.title}</span>
-        {task.completed && <span className="task-completed-emoji">🎉</span>}
+        {titleEditing ? (
+          <input
+            className="task-title-input"
+            value={newTitle}
+            onChange={(event) => setNewTitle(event.target.value)}
+            onBlur={finishEditing}
+            onKeyDown={handleKeydown}
+            autoFocus
+          />
+        ) : (
+          <>
+            <span className="task-title">{task.title}</span>
+            {task.completed && <span className="task-completed-emoji">🎉</span>}
+
+            <button
+              type="button"
+              className="task-title-btn"
+              onClick={startEditing}
+            >
+              Add
+            </button>
+          </>
+        )}
       </span>
 
       <div className="task-actions">
