@@ -1,7 +1,7 @@
 // UI component responsible for rendering and updating the task list
 // Delegates state management and data persistance to TaskListManager (Singleton)
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 
 import { useSelector, useDispatch } from "react-redux";
 
@@ -49,10 +49,24 @@ export default function TaskList() {
   const taskArray = useSelector(selectTaskList);
 
   // visibleTaskArray will be what is sorted on what is filtered
+  // useMemo so that they rerender when changed, not on every
   const visibleTaskArray = useMemo(() => {
     const filteredTasksArray = filterTasks(taskArray, filterMode);
     return sortTasks(filteredTasksArray, sortMode);
   }, [taskArray, filterMode, sortMode]);
+
+  //tipNewFeature = { current: false }
+  const tipNewFeature = useRef(true);
+
+  // Show tip once per session
+  useEffect(() => {
+    const canReorder = sortMode === "none" && visibleTaskArray.length > 1;
+
+    if (canReorder && tipNewFeature.current) {
+      toast.success("Tip: Drag and Drop tasks ↕️");
+      tipNewFeature.current = false;
+    }
+  }, [sortMode, visibleTaskArray.length]);
 
   const isAllChecked =
     visibleTaskArray.length > 0 &&
@@ -282,21 +296,19 @@ export default function TaskList() {
                       draggableId={task.id}
                       index={index}
                     >
+                      {/*Some props are for DnD feature*/}
                       {(provided) => (
-                        <li
+                        <TaskItem
+                          key={task.id}
+                          task={task}
+                          isChecked={isChecked(task.id)}
+                          onDelete={deleteTask}
+                          onUpdateChecked={toggleChecked}
+                          onToggleCompleted={toggleCompleted}
+                          dragHandleProps={provided.dragHandleProps}
+                          dragProps={provided.draggableProps}
                           ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <TaskItem
-                            key={task.id}
-                            task={task}
-                            isChecked={isChecked(task.id)}
-                            onDelete={deleteTask}
-                            onUpdateChecked={toggleChecked}
-                            onToggleCompleted={toggleCompleted}
-                          />
-                        </li>
+                        />
                       )}
                     </Draggable>
                   ))}

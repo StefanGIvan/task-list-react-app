@@ -67,6 +67,7 @@ const TaskListSlice = createSlice({
       return state.filter((task) => !taskIds.has(task.id));
     },
 
+    // keep reorder here since it changes task order in array and it needs to persist
     reorder(state, action) {
       // sourceIndex - index where the dragged item used to be
       // destIndex - where it should go

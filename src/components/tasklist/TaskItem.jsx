@@ -17,6 +17,9 @@ export default function TaskItem({
   onDelete,
   onUpdateChecked,
   onToggleCompleted,
+  dragProps,
+  dragHandleProps,
+  ref,
 }) {
   // Functions that update the UI
   const handleChecked = () => {
@@ -52,7 +55,12 @@ export default function TaskItem({
   }
 
   return (
-    <li className={"task-item" + (task.completed ? " completed" : "")}>
+    <li
+      className={"task-item" + (task.completed ? " completed" : "")}
+      ref={ref}
+      {...dragProps}
+      {...dragHandleProps}
+    >
       <input
         type="checkbox"
         className="task-checkbox"
