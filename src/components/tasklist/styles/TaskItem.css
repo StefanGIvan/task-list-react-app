@@ -8,6 +8,8 @@
 }
 
 .task-checkbox {
+  height: 15px;
+  width: 15px;
   flex: 0 0 auto;
   margin: 0;
 }
@@ -23,7 +25,7 @@
 }
 
 .task-title {
-  font-size: 18px;
+  font-size: 20px;
   padding-left: 10px;
   flex: 1 1 auto;
   min-width: 0;
@@ -52,7 +54,7 @@
 }
 
 .task-priority-text {
-  font-size: 18px;
+  font-size: 20px;
   padding-right: 10px;
 }
 
@@ -73,13 +75,13 @@
 }
 
 .complete-icon {
-  width: 25px;
-  height: 25px;
+  width: 28px;
+  height: 28px;
 }
 
 .undo-icon {
-  width: 25px;
-  height: 25px;
+  width: 28px;
+  height: 28px;
 }
 
 .task-delete-btn {

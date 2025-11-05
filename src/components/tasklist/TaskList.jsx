@@ -246,6 +246,7 @@ export default function TaskList() {
             onChange={(event) => setTaskText(event.target.value)}
             placeholder="Write a task..."
           />
+          {/*Priority selector*/}
           <select
             className="tasklist-select-priority"
             value={taskPriority}
@@ -282,7 +283,10 @@ export default function TaskList() {
           <EmptyState />
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="task-list">
+            <Droppable
+              droppableId="task-list"
+              isDropDisabled={sortMode !== "none"}
+            >
               {(provided) => (
                 <ul
                   className="tasklist-items-container"
@@ -295,6 +299,7 @@ export default function TaskList() {
                       key={task.id}
                       draggableId={task.id}
                       index={index}
+                      isDragDisabled={sortMode !== "none"}
                     >
                       {/*Some props are for DnD feature*/}
                       {(provided) => (
@@ -305,9 +310,12 @@ export default function TaskList() {
                           onDelete={deleteTask}
                           onUpdateChecked={toggleChecked}
                           onToggleCompleted={toggleCompleted}
-                          dragHandleProps={provided.dragHandleProps}
+                          dragHandleProps={
+                            sortMode === "none" ? provided.dragHandleProps : {}
+                          }
                           dragProps={provided.draggableProps}
                           ref={provided.innerRef}
+                          ariaDisabled={sortMode !== "none"}
                         />
                       )}
                     </Draggable>

@@ -6,7 +6,7 @@
 
 .tasklist-title {
   text-align: center;
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 600;
   margin-top: 0px;
   margin-bottom: 25px;
@@ -32,7 +32,7 @@
   padding: 6px 10px;
   width: 50%;
   max-width: 420px;
-  font-size: 18px;
+  font-size: 20px;
   border: 1px solid var(--black);
   border-radius: 3px;
   margin: auto;
@@ -50,7 +50,7 @@
   padding: 6px 10px;
   width: 50%;
   max-width: 420px;
-  font-size: 18px;
+  font-size: 20px;
   border: 1px solid var(--black);
   border-radius: 3px;
 }
@@ -89,7 +89,7 @@
   text-align: center;
   color: var(--white);
   margin-top: 12px;
-  font-size: 20px;
+  font-size: 22px;
   opacity: 0.8;
 }
 
