@@ -14,11 +14,10 @@ import {
   completeSelected as completeSelectedAction,
   deleteSelected as deleteSelectedAction,
   taskTitleEdit as taskTitleEditAction,
+  reorder,
 } from "../../features/tasks/tasksSlice.js";
 
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-
-import { reorder } from "../../features/tasks/tasksSlice.js";
 
 import TaskItem from "./TaskItem";
 
@@ -49,11 +48,20 @@ export default function TaskList() {
   //exported from the store
   const taskArray = useSelector(selectTaskList); //useEffect*
 
+  // run useEffect every time the task array changes so the selectedTaskArray can update
+  useEffect(() => {
+    //remove id for checked from the array
+    const updateSelectedTaskArray = selectedTaskArray.filter((id) =>
+      taskArray.some((task) => task.id === id)
+    );
+    setSelectedTaskArray(updateSelectedTaskArray);
+  }, [taskArray]);
   // visibleTaskArray will be what is sorted on what is filtered
   // useMemo so that they rerender when changed, not on every
   //filtered; useMemo vs useEffect*
   const visibleTaskArray = useMemo(() => {
     const filteredTasksArray = filterTasks(taskArray, filterMode);
+    console.log(JSON.stringify(taskArray));
     return sortTasks(filteredTasksArray, sortMode);
   }, [taskArray, filterMode, sortMode]);
 
@@ -69,7 +77,7 @@ export default function TaskList() {
       toast.success("Tip: Drag and Drop tasks ↕️");
       tipNewFeature.current = false;
     }
-  }, [sortMode, visibleTaskArray.length]);
+  }, [sortMode, visibleTaskArray]);
 
   const isAllChecked =
     visibleTaskArray.length > 0 &&
@@ -114,7 +122,6 @@ export default function TaskList() {
     }
     log("[toggleChecked] Toggled checked: ", taskId);
 
-    // return [...previousTasks, taskId];
     setSelectedTaskArray([...selectedTaskArray, taskId]);
   }
 
@@ -167,12 +174,6 @@ export default function TaskList() {
   function deleteTask(taskId) {
     dispatch(deleteTaskAction(taskId));
 
-    //remove id for checked from the array
-    const updateSelectedTaskArray = selectedTaskArray.filter(
-      (id) => id !== taskId
-    );
-    setSelectedTaskArray(updateSelectedTaskArray);
-
     toast.success("Task deleted");
   }
 
@@ -180,12 +181,6 @@ export default function TaskList() {
   function toggleCompleted(taskId, isCompleted) {
     //listener that notifies repairing the list of ids
     dispatch(toggleCompletedAction({ taskId, isCompleted }));
-
-    //remove id for checked from the array
-    const updateSelectedTaskArray = selectedTaskArray.filter(
-      (id) => id !== taskId
-    );
-    setSelectedTaskArray(updateSelectedTaskArray);
 
     if (isCompleted) {
       toast.success("Task completed!");
@@ -198,18 +193,12 @@ export default function TaskList() {
   function completeSelected() {
     dispatch(completeSelectedAction(selectedTaskArray));
 
-    //remove every id from the array
-    setSelectedTaskArray([]);
-
     toast.success("Tasks completed!");
   }
 
   // Delete all tasks that are checked (from HeaderActions)
   function deleteSelected() {
     dispatch(deleteSelectedAction(selectedTaskArray));
-
-    //remove every id from the array
-    setSelectedTaskArray([]);
 
     toast.success("Tasks deleted!");
   }
@@ -220,7 +209,7 @@ export default function TaskList() {
 
   function handleDragEnd(result) {
     // result comes from @hello-pangea/dnd - contains info about source and destination (both have index)
-    // UI check + Reducer check
+    // UI check + reducer check
     const { source, destination } = result;
 
     // if a user drags a task and drops it outside - return
@@ -228,15 +217,16 @@ export default function TaskList() {
       return;
     }
 
-    // do not reorder if sorting is active (confusing UX)
     if (sortMode !== "none") {
+      setSortMode("none");
+      toast("Sorting set to none. Drag again to reorder.");
       return;
     }
 
     dispatch(
       reorder({
         sourceIndex: source.index,
-        destIndex: destination.index,
+        destinationIndex: destination.index,
       })
     );
   }
@@ -292,10 +282,7 @@ export default function TaskList() {
           <EmptyState />
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable
-              droppableId="task-list"
-              isDropDisabled={sortMode !== "none"}
-            >
+            <Droppable droppableId="task-list">
               {(provided) => (
                 <ul
                   className="tasklist-items-container"
@@ -308,7 +295,6 @@ export default function TaskList() {
                       key={task.id}
                       draggableId={task.id}
                       index={index}
-                      isDragDisabled={sortMode !== "none"}
                     >
                       {/*Some props are for DnD feature*/}
                       {(provided) => (
@@ -320,12 +306,10 @@ export default function TaskList() {
                           onUpdateChecked={toggleChecked}
                           onToggleCompleted={toggleCompleted}
                           onTaskTitleEdit={taskTitleEdit}
-                          dragHandleProps={
-                            sortMode === "none" ? provided.dragHandleProps : {}
-                          }
+                          dragHandleProps={provided.dragHandleProps}
                           dragProps={provided.draggableProps}
                           ref={provided.innerRef}
-                          ariaDisabled={sortMode !== "none"}
+                          ariaDisabled={sortMode}
                         />
                       )}
                     </Draggable>

@@ -67,23 +67,14 @@ const TaskListSlice = createSlice({
       return state.filter((task) => !taskIds.has(task.id));
     },
 
-    // keep reorder here since it changes task order in array and it needs to persist
     reorder(state, action) {
-      // sourceIndex - index where the dragged item used to be
-      // destIndex - where it should go
-      const { sourceIndex, destIndex } = action.payload;
+      const { sourceIndex, destinationIndex } = action.payload;
 
-      // If no destination or same position: do nothing
-      if (destIndex == null || sourceIndex === destIndex) {
-        return;
-      }
+      if (destinationIndex == null || sourceIndex === destinationIndex) return;
 
-      // Remove item from source
-      const removed = state.splice(sourceIndex, 1);
-      const moved = removed[0];
+      const [moved] = state.splice(sourceIndex, 1);
 
-      // Insert at new position
-      state.splice(destIndex, 0, moved);
+      state.splice(destinationIndex, 0, moved);
     },
 
     taskTitleEdit(state, action) {
