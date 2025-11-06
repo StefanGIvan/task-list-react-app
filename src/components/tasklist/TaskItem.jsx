@@ -9,6 +9,8 @@ import DeleteIcon from "../../assets/icons/delete.svg?react";
 
 import UndoIcon from "../../assets/icons/undo.svg?react";
 
+import EditIcon from "../../assets/icons/edit.svg?react";
+
 import { useState } from "react";
 
 import "./styles/TaskItem.css";
@@ -100,7 +102,7 @@ export default function TaskItem({
         onChange={handleChecked}
       />
 
-      <span className="task-title-wrapper">
+      <span className="task-title-row">
         {titleEditing ? (
           <input
             className="task-title-input"
@@ -117,10 +119,10 @@ export default function TaskItem({
 
             <button
               type="button"
-              className="task-title-btn"
+              className="task-title-edit-btn"
               onClick={startEditing}
             >
-              Add
+              {<EditIcon className="edit-icon" />}
             </button>
           </>
         )}

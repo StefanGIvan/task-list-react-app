@@ -1,5 +1,5 @@
 // UI component responsible for rendering and updating the task list
-// Delegates state management and data persistance to TaskListManager (Singleton)
+// readme file documentation*
 
 import { useMemo, useState, useEffect, useRef } from "react";
 
@@ -47,16 +47,18 @@ export default function TaskList() {
   const dispatch = useDispatch();
   //allow TaskList to access Redux data - return the array of tasks from store
   //exported from the store
-  const taskArray = useSelector(selectTaskList);
+  const taskArray = useSelector(selectTaskList); //useEffect*
 
   // visibleTaskArray will be what is sorted on what is filtered
   // useMemo so that they rerender when changed, not on every
+  //filtered; useMemo vs useEffect*
   const visibleTaskArray = useMemo(() => {
     const filteredTasksArray = filterTasks(taskArray, filterMode);
     return sortTasks(filteredTasksArray, sortMode);
   }, [taskArray, filterMode, sortMode]);
 
   //tipNewFeature = { current: false }
+  //pop up new features and indicator of new features (*)
   const tipNewFeature = useRef(true);
 
   // Show tip once per session
@@ -74,6 +76,7 @@ export default function TaskList() {
     selectedTaskArray.length === visibleTaskArray.length;
 
   // Array that holds tasks that are checked and visible in the same time (needed when using other filter and tasks were selected before)
+  // selectedIdsArray
   const visibleIdsArray = visibleTaskArray.filter((task) =>
     selectedTaskArray.includes(task.id)
   );
@@ -175,6 +178,7 @@ export default function TaskList() {
 
   // Mark a task as completed/uncompleted, if it's checked (from TaskItem)
   function toggleCompleted(taskId, isCompleted) {
+    //listener that notifies repairing the list of ids
     dispatch(toggleCompletedAction({ taskId, isCompleted }));
 
     //remove id for checked from the array
