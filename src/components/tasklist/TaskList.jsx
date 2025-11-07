@@ -79,22 +79,22 @@ export default function TaskList() {
     }
   }, [sortMode, visibleTaskArray]);
 
+  // Array that holds tasks that are checked and visible in the same time
+  const visibleSelectedArray = useMemo(
+    () =>
+      visibleTaskArray.filter((task) => selectedTaskArray.includes(task.id)),
+    [visibleTaskArray, selectedTaskArray]
+  );
+
   const isAllChecked =
     visibleTaskArray.length > 0 &&
-    selectedTaskArray.length === visibleTaskArray.length;
-
-  // Array that holds tasks that are checked and visible in the same time (needed when using other filter and tasks were selected before)
-  // selectedIdsArray
-  const visibleIdsArray = visibleTaskArray.filter((task) =>
-    selectedTaskArray.includes(task.id)
-  );
+    visibleSelectedArray.length === visibleTaskArray.length;
 
   // Add new task
   function addTask(event) {
     event.preventDefault();
 
     //catch .trim before it enters Redux
-    //taskText.trim()* - lost
     const trimTaskText = taskText.trim();
     if (trimTaskText) {
       dispatch(addTaskAction({ title: trimTaskText, priority: taskPriority }));
@@ -265,7 +265,7 @@ export default function TaskList() {
       {/*Render HeaderActions between Tasklist form and Tasklist items*/}
       <HeaderActions
         totalCount={visibleTaskArray.length}
-        selectedCount={visibleIdsArray.length}
+        selectedCount={visibleSelectedArray.length}
         onCompleteSelected={completeSelected}
         onDeleteSelected={deleteSelected}
         onToggleSelectAll={toggleCheckAll}
